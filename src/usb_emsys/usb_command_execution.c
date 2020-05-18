@@ -5,6 +5,8 @@
  *      Author: DennisKaiser
  */
 
+#include <string.h>
+
 #include "usb_command_execution.h"
 #include "pci.h"
 #include "pcie_test.h"
@@ -24,6 +26,8 @@ static void execute_command_get_firmware_version(void)
 	tPacket.ulMajor = VERSION_MAJOR;
 	tPacket.ulMinor = VERSION_MINOR;
 	tPacket.ulSub = VERSION_MICRO;
+	memset(tPacket.acVcsVersion, 0, sizeof(tPacket.acVcsVersion));
+	strncpy(tPacket.acVcsVersion, VERSION_VCS, sizeof(tPacket.acVcsVersion));
 	usb_send_packet((unsigned char*)(&tPacket), sizeof(tPacket));
 }
 

@@ -12,6 +12,7 @@
 
 
 typedef unsigned long * PUL_ARGUMENT_OUT;
+typedef char ** PPC_ARGUMENT_OUT;
 typedef int RESULT_INT_TRUE_OR_NIL_WITH_ERR;
 typedef int RESULT_INT_NOTHING_OR_NIL_WITH_ERR;
 typedef int RESULT_INT_INT_OR_NIL_WITH_ERR;
@@ -35,7 +36,7 @@ public:
 	~PapaSchlumpfFlex(void);
 
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR connect(void);
-	RESULT_INT_NOTHING_OR_NIL_WITH_ERR getFirmwareVersion(PUL_ARGUMENT_OUT pulVersionMajor, PUL_ARGUMENT_OUT pulVersionMinor, PUL_ARGUMENT_OUT pulVersionSub);
+	RESULT_INT_NOTHING_OR_NIL_WITH_ERR getFirmwareVersion(PUL_ARGUMENT_OUT pulVersionMajor, PUL_ARGUMENT_OUT pulVersionMinor, PUL_ARGUMENT_OUT pulVersionSub, PPC_ARGUMENT_OUT ppcVcsVersion);
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR resetPCI(uint32_t ulResetActiveToClock, uint32_t ulResetActiveDelayAfterClock, uint32_t ulBusIdleDelay);
 	RESULT_INT_NOTHING_OR_NIL_WITH_ERR ioRead(uint32_t ulAddress, PUL_ARGUMENT_OUT pulData);
 	RESULT_INT_NOTHING_OR_NIL_WITH_ERR memRead(uint32_t ulAddress, PUL_ARGUMENT_OUT pulData);

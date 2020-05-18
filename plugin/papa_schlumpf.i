@@ -22,6 +22,19 @@
 %}
 
 
+%typemap(in, numinputs=0) PPC_ARGUMENT_OUT
+%{
+	char *pcArgument_$argnum;
+	$1 = &pcArgument_$argnum;
+%}
+%typemap(argout) PPC_ARGUMENT_OUT
+%{
+	lua_pushstring(L, pcArgument_$argnum);
+	free(pcArgument_$argnum);
+	++SWIG_arg;
+%}
+
+
 %typemap(out) RESULT_INT_TRUE_OR_NIL_WITH_ERR
 %{
 	if( $1>=0 )

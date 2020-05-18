@@ -72,13 +72,14 @@ RESULT_INT_TRUE_OR_NIL_WITH_ERR PapaSchlumpfFlex::connect(void)
 
 
 
-RESULT_INT_NOTHING_OR_NIL_WITH_ERR PapaSchlumpfFlex::getFirmwareVersion(PUL_ARGUMENT_OUT pulVersionMajor, PUL_ARGUMENT_OUT pulVersionMinor, PUL_ARGUMENT_OUT pulVersionSub)
+RESULT_INT_NOTHING_OR_NIL_WITH_ERR PapaSchlumpfFlex::getFirmwareVersion(PUL_ARGUMENT_OUT pulVersionMajor, PUL_ARGUMENT_OUT pulVersionMinor, PUL_ARGUMENT_OUT pulVersionSub, PPC_ARGUMENT_OUT ppcVcsVersion)
 {
 	PAPA_SCHLUMPF_RESULT_T tResult;
 	int iResult;
 	int iTransfered;
 	PAPA_SCHLUMPF_USB_COMMAND_T tCommand;
 	PAPA_SCHLUMPF_USB_COMMAND_RESULT_GETFIRMWAREVERSION_T tResponse;
+	char *pcVcsVersion;
 
 
 	if( m_ptDevHandlePapaSchlumpf==NULL )
@@ -117,6 +118,12 @@ RESULT_INT_NOTHING_OR_NIL_WITH_ERR PapaSchlumpfFlex::getFirmwareVersion(PUL_ARGU
 				*pulVersionMajor = tResponse.ulMajor;
 				*pulVersionMinor = tResponse.ulMinor;
 				*pulVersionSub = tResponse.ulSub;
+				pcVcsVersion = (char*)calloc(1, sizeof(tResponse.acVcsVersion)+1);
+				if( pcVcsVersion!=NULL )
+				{
+					strncpy(pcVcsVersion, tResponse.acVcsVersion, sizeof(tResponse.acVcsVersion));
+				}
+				*ppcVcsVersion = pcVcsVersion;
 				tResult = PAPA_SCHLUMPF_RESULT_Ok;
 			}
 		}
