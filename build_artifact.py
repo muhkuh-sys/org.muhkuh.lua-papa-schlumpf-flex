@@ -1,4 +1,4 @@
-#! /usr/bin/python2.7
+#! /usr/bin/python3
 
 from jonchki import cli_args
 from jonchki import install
@@ -79,8 +79,10 @@ if tPlatform['host_distribution_id'] == 'ubuntu':
     if tPlatform['distribution_id'] == 'ubuntu':
         # Build on linux for linux.
         # It is currently not possible to build for another version of the OS.
-        if tPlatform['distribution_version'] != tPlatform['host_distribution_version']:
-            raise Exception('The target Ubuntu version must match the build host.')
+        if(tPlatform['distribution_version'] !=
+           tPlatform['host_distribution_version']):
+            raise Exception('The target Ubuntu version must match the build '
+                            'host.')
 
         if tPlatform['cpu_architecture'] == tPlatform['host_cpu_architecture']:
             # Build for the build host.
@@ -101,26 +103,42 @@ if tPlatform['host_distribution_id'] == 'ubuntu':
             astrDeb = [
                 'libudev-dev:arm64'
             ]
-            install.install_foreign_debs(astrDeb, strCfg_workingFolder, strCfg_projectFolder)
+            install.install_foreign_debs(
+                astrDeb,
+                strCfg_workingFolder,
+                strCfg_projectFolder
+            )
 
             astrCMAKE_COMPILER = [
-                '-DCMAKE_TOOLCHAIN_FILE=%s/cmake/toolchainfiles/toolchain_ubuntu_arm64.cmake' % strCfg_projectFolder
+                '-DCMAKE_TOOLCHAIN_FILE=%s/cmake/toolchainfiles/'
+                'toolchain_ubuntu_arm64.cmake' % strCfg_projectFolder
             ]
             astrCMAKE_PLATFORM = [
-                '-DJONCHKI_PLATFORM_DIST_ID=%s' % tPlatform['distribution_id'],
-                '-DJONCHKI_PLATFORM_DIST_VERSION=%s' % tPlatform['distribution_version'],
-                '-DJONCHKI_PLATFORM_CPU_ARCH=%s' % tPlatform['cpu_architecture']
+                '-DJONCHKI_PLATFORM_DIST_ID=%s' %
+                tPlatform['distribution_id'],
+
+                '-DJONCHKI_PLATFORM_DIST_VERSION=%s' %
+                tPlatform['distribution_version'],
+
+                '-DJONCHKI_PLATFORM_CPU_ARCH=%s' %
+                tPlatform['cpu_architecture']
             ]
 
             astrJONCHKI_SYSTEM = [
-                '--distribution-id %s' % tPlatform['distribution_id'],
-                '--distribution-version %s' % tPlatform['distribution_version'],
-                '--cpu-architecture %s' % tPlatform['cpu_architecture']
+                '--distribution-id %s' %
+                tPlatform['distribution_id'],
+
+                '--distribution-version %s' %
+                tPlatform['distribution_version'],
+
+                '--cpu-architecture %s' %
+                tPlatform['cpu_architecture']
             ]
             strMake = 'make'
 
         else:
-            raise Exception('Unknown CPU architecture: "%s"' % tPlatform['cpu_architecture'])
+            raise Exception('Unknown CPU architecture: "%s"' %
+                            tPlatform['cpu_architecture'])
 
     elif tPlatform['distribution_id'] == 'windows':
         # Cross build on linux for windows.
@@ -128,7 +146,8 @@ if tPlatform['host_distribution_id'] == 'ubuntu':
         if tPlatform['cpu_architecture'] == 'x86':
             # Build for 32bit windows.
             astrCMAKE_COMPILER = [
-                '-DCMAKE_TOOLCHAIN_FILE=%s/cmake/toolchainfiles/toolchain_windows_32.cmake' % strCfg_projectFolder
+                '-DCMAKE_TOOLCHAIN_FILE=%s/cmake/toolchainfiles/'
+                'toolchain_windows_32.cmake' % strCfg_projectFolder
             ]
             astrCMAKE_PLATFORM = [
                 '-DJONCHKI_PLATFORM_DIST_ID=windows',
@@ -145,7 +164,8 @@ if tPlatform['host_distribution_id'] == 'ubuntu':
         elif tPlatform['cpu_architecture'] == 'x86_64':
             # Build for 64bit windows.
             astrCMAKE_COMPILER = [
-                '-DCMAKE_TOOLCHAIN_FILE=%s/cmake/toolchainfiles/toolchain_windows_64.cmake' % strCfg_projectFolder
+                '-DCMAKE_TOOLCHAIN_FILE=%s/cmake/toolchainfiles/'
+                'toolchain_windows_64.cmake' % strCfg_projectFolder
             ]
             astrCMAKE_PLATFORM = [
                 '-DJONCHKI_PLATFORM_DIST_ID=windows',
@@ -160,10 +180,12 @@ if tPlatform['host_distribution_id'] == 'ubuntu':
             strMake = 'make'
 
         else:
-            raise Exception('Unknown CPU architecture: "%s"' % tPlatform['cpu_architecture'])
+            raise Exception('Unknown CPU architecture: "%s"' %
+                            tPlatform['cpu_architecture'])
 
     else:
-        raise Exception('Unknown distribution: "%s"' % tPlatform['distribution_id'])
+        raise Exception('Unknown distribution: "%s"' %
+                        tPlatform['distribution_id'])
 
 else:
     raise Exception(
@@ -218,7 +240,8 @@ subprocess.check_call(strMake, shell=True, cwd=strCwd, env=astrEnv)
 #
 # Get the build requirements for LUA5.1.
 #
-for strMatch in glob.iglob(os.path.join(strCwd, 'lua5.1-papa-schlumpf-flex-*.xml')):
+for strMatch in glob.iglob(os.path.join(strCwd,
+                                        'lua5.1-papa-schlumpf-flex-*.xml')):
     os.remove(strMatch)
 
 astrCmd = [
@@ -276,7 +299,8 @@ subprocess.check_call('%s pack' % strMake, shell=True, cwd=strCwd, env=astrEnv)
 #
 # Get the build requirements for LUA5.4.
 #
-for strMatch in glob.iglob(os.path.join(strCwd, 'lua5.4-papa-schlumpf-flex-*.xml')):
+for strMatch in glob.iglob(os.path.join(strCwd,
+                                        'lua5.4-papa-schlumpf-flex-*.xml')):
     os.remove(strMatch)
 
 astrCmd = [
