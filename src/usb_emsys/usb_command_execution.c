@@ -9,6 +9,7 @@
 #include "pci.h"
 #include "pcie_test.h"
 #include "uprintf.h"
+#include "version.h"
 
 
 extern volatile unsigned long *g_pul_PCI_DMA_Buffer_Start;
@@ -20,9 +21,9 @@ static void execute_command_get_firmware_version(void)
 
 
 	tPacket.ulStatus = USB_COMMAND_STATUS_Ok;
-	tPacket.ulMajor = 1;
-	tPacket.ulMinor = 2;
-	tPacket.ulSub = 4;
+	tPacket.ulMajor = VERSION_MAJOR;
+	tPacket.ulMinor = VERSION_MINOR;
+	tPacket.ulSub = VERSION_MICRO;
 	usb_send_packet((unsigned char*)(&tPacket), sizeof(tPacket));
 }
 
