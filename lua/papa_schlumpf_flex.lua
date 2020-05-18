@@ -305,4 +305,51 @@ end
 
 
 
+function papaSchlumpfFlex:ioRead(ulAddress)
+  return self.tP:ioRead(ulAddress)
+end
+
+
+
+function papaSchlumpfFlex:memRead(ulAddress)
+  return self.tP:memRead(ulAddress)
+end
+
+
+
+function papaSchlumpfFlex:cfg0Read(ulAddress)
+  return self.tP:cfg0Read(ulAddress)
+end
+
+
+
+function papaSchlumpfFlex:cfg1Read(ulAddress)
+  return self.tP:cfg1Read(ulAddress)
+end
+
+
+
+function papaSchlumpfFlex:ioWrite(ulAddress, ulData)
+  return self.tP:ioWrite(ulAddress, ulData)
+end
+
+
+
+function papaSchlumpfFlex:memWrite(ulAddress, ulData)
+  return self.tP:memWrite(ulAddress, ulData)
+end
+
+
+
+function papaSchlumpfFlex:cfg0Write(ulAddress, ulData)
+  return self.tP:cfg0Write(ulAddress, ulData)
+end
+
+
+
+function papaSchlumpfFlex:cfg1Write(ulAddress, ulData)
+  return self.tP:cfg1Write(ulAddress, ulData)
+end
+
+
 return papaSchlumpfFlex
