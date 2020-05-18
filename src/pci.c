@@ -58,8 +58,8 @@ void delay100US(unsigned int uDelay100Us)
 
 void pciInitGlobals(void)
 {
-	g_pul_PCI_DMA_Buffer_Start = &g_ul_PCI_DMA_Buffer_Start;
-	g_pul_PCI_DMA_Buffer_End = &g_ul_PCI_DMA_Buffer_End;
+	g_pul_PCI_DMA_Buffer_Start = &g_ul_PCI_DMA_Buffer_Start[0];
+	g_pul_PCI_DMA_Buffer_End = &g_ul_PCI_DMA_Buffer_End[0];
 }
 
 
