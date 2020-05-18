@@ -1,0 +1,172 @@
+#ifndef __PAPA_SCHLUMPF_FIRMWARE_INTERFACE_H__
+#define __PAPA_SCHLUMPF_FIRMWARE_INTERFACE_H__
+
+#include <stdint.h>
+
+#define PAPA_SCHLUMPF_USB_VENDOR_ID               0x1939
+#define PAPA_SCHLUMPF_USB_PRODUCT_ID              0x0028
+#define PAPA_SCHLUMPF_USB_PRODUCT_RELEASE         0x0001
+
+/* Commands received over USB. */
+typedef enum PAPA_SCHLUMPF_USB_COMMAND_ENUM
+{
+	PAPA_SCHLUMPF_USB_COMMAND_GetFirmwareVersion = 0,
+	PAPA_SCHLUMPF_USB_COMMAND_ResetPCI = 1,
+	PAPA_SCHLUMPF_USB_COMMAND_DMAIoRead = 2,
+	PAPA_SCHLUMPF_USB_COMMAND_DMAMemRead = 3,
+	PAPA_SCHLUMPF_USB_COMMAND_DMACfg0Read = 4,
+	PAPA_SCHLUMPF_USB_COMMAND_DMACfg1Read = 5,
+	PAPA_SCHLUMPF_USB_COMMAND_DMAIoWrite = 6,
+	PAPA_SCHLUMPF_USB_COMMAND_DMAMemWrite = 7,
+	PAPA_SCHLUMPF_USB_COMMAND_DMACfg0Write = 8,
+	PAPA_SCHLUMPF_USB_COMMAND_DMACfg1Write = 9
+} PAPA_SCHLUMPF_USB_COMMANDS_T;
+
+
+
+/*Status for the command execution between PC and Test board*/
+typedef enum PAPA_SCHLUMPF_USB_COMMAND_STATUS_ENUM
+{
+	USB_COMMAND_STATUS_Ok                  = 0,
+	USB_COMMAND_STATUS_UnknownCommand      = 1,
+	USB_COMMAND_STATUS_Timeout             = 2,
+	USB_COMMAND_STATUS_PciInitFailed       = 3,
+	USB_COMMAND_STATUS_PciTransferFailed   = 4
+} PAPA_SCHLUMPF_USB_COMMAND_STATUS_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_STRUCT
+{
+	uint32_t ulCommand;
+} PAPA_SCHLUMPF_USB_COMMAND_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_RESET_PCI_STRUCT
+{
+	uint32_t ulCommand;
+	uint32_t ulResetActiveToClock;
+	uint32_t ulResetActiveDelayAfterClock;
+	uint32_t ulBusIdleDelay;
+} PAPA_SCHLUMPF_USB_COMMAND_RESET_PCI_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_DMA_IO_READ_STRUCT
+{
+	uint32_t ulCommand;
+	uint32_t ulDeviceAddress;
+} PAPA_SCHLUMPF_USB_COMMAND_DMA_IO_READ_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_READ_STRUCT
+{
+	uint32_t ulCommand;
+	uint32_t ulDeviceAddress;
+} PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_READ_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_DMA_CFG0_READ_STRUCT
+{
+	uint32_t ulCommand;
+	uint32_t ulDeviceAddress;
+} PAPA_SCHLUMPF_USB_COMMAND_DMA_CFG0_READ_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_DMA_CFG1_READ_STRUCT
+{
+	uint32_t ulCommand;
+	uint32_t ulDeviceAddress;
+} PAPA_SCHLUMPF_USB_COMMAND_DMA_CFG1_READ_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_DMA_IO_WRITE_STRUCT
+{
+	uint32_t ulCommand;
+	uint32_t ulDeviceAddress;
+	uint32_t ulData;
+} PAPA_SCHLUMPF_USB_COMMAND_DMA_IO_WRITE_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_WRITE_STRUCT
+{
+	uint32_t ulCommand;
+	uint32_t ulDeviceAddress;
+	uint32_t ulData;
+} PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_WRITE_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_DMA_CFG0_WRITE_STRUCT
+{
+	uint32_t ulCommand;
+	uint32_t ulDeviceAddress;
+	uint32_t ulData;
+} PAPA_SCHLUMPF_USB_COMMAND_DMA_CFG0_WRITE_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_DMA_CFG1_WRITE_STRUCT
+{
+	uint32_t ulCommand;
+	uint32_t ulDeviceAddress;
+	uint32_t ulData;
+} PAPA_SCHLUMPF_USB_COMMAND_DMA_CFG1_WRITE_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_RESULT_STATUS_STRUCT
+{
+	uint32_t ulStatus;
+} PAPA_SCHLUMPF_USB_COMMAND_RESULT_STATUS_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_RESULT_GETFIRMWAREVERSION_STRUCT
+{
+	uint32_t ulStatus;
+	uint32_t ulMajor;
+	uint32_t ulMinor;
+	uint32_t ulSub;
+} PAPA_SCHLUMPF_USB_COMMAND_RESULT_GETFIRMWAREVERSION_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_RESULT_DMA_IO_READ_STRUCT
+{
+	uint32_t ulStatus;
+	uint32_t ulData;
+} PAPA_SCHLUMPF_USB_COMMAND_RESULT_DMA_IO_READ_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_RESULT_DMA_MEM_READ_STRUCT
+{
+	uint32_t ulStatus;
+	uint32_t ulData;
+} PAPA_SCHLUMPF_USB_COMMAND_RESULT_DMA_MEM_READ_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_RESULT_DMA_CFG0_READ_STRUCT
+{
+	uint32_t ulStatus;
+	uint32_t ulData;
+} PAPA_SCHLUMPF_USB_COMMAND_RESULT_DMA_CFG0_READ_T;
+
+
+
+typedef struct PAPA_SCHLUMPF_USB_COMMAND_RESULT_DMA_CFG1_READ_STRUCT
+{
+	uint32_t ulStatus;
+	uint32_t ulData;
+} PAPA_SCHLUMPF_USB_COMMAND_RESULT_DMA_CFG1_READ_T;
+
+
+#endif  /* __PAPA_SCHLUMPF_FIRMWARE_INTERFACE_H__ */
