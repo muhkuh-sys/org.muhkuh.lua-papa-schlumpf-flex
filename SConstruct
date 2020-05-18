@@ -50,7 +50,6 @@ sources = """
     src/init.S
     src/main.c
     src/pci.c
-    src/pcie_test.c
     src/uprintf_buffer.c
     src/usb_emsys/usb.c
     src/usb_emsys/usb_descriptors.c

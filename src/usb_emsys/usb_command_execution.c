@@ -9,7 +9,6 @@
 
 #include "usb_command_execution.h"
 #include "pci.h"
-#include "pcie_test.h"
 #include "uprintf.h"
 #include "version.h"
 
