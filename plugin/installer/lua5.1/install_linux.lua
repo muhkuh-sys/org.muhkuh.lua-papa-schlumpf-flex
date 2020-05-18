@@ -4,6 +4,7 @@ local tResult
 
 if strDistId=='@JONCHKI_PLATFORM_DIST_ID@' and strDistVersion=='@JONCHKI_PLATFORM_DIST_VERSION@' and strCpuArch=='@JONCHKI_PLATFORM_CPU_ARCH@' then
   t:install('lua_plugins/', '${install_lua_cpath}/')
+  t:install('lua/', '${install_lua_path}/')
   tResult = true
 end
 

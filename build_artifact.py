@@ -8,6 +8,7 @@ from jonchki import vcs_id
 import glob
 import os
 import subprocess
+import sys
 
 
 tPlatform = cli_args.parse()
@@ -219,6 +220,17 @@ strProjectVersionVcs, strProjectVersionVcsLong = vcs_id.get(
 )
 print(strProjectVersionVcs, strProjectVersionVcsLong)
 
+
+# ---------------------------------------------------------------------------
+#
+# Build the firmware.
+#
+astrCmd = [
+    sys.executable,
+    'mbs/mbs'
+]
+strCwd = strCfg_projectFolder
+subprocess.check_call(' '.join(astrCmd), shell=True, cwd=strCwd, env=astrEnv)
 
 # ---------------------------------------------------------------------------
 #
