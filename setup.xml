@@ -24,7 +24,7 @@
 			<group>org.gnu.gcc</group>
 			<name>gcc-arm-none-eabi</name>
 			<package>gcc-arm-none-eabi_${platform}_${machine}</package>
-			<version>4.7.2_2</version>
+			<version>9.2.1_1</version>
 			<typ>tar.bz2</typ>
 		</tool>
 	</tools>

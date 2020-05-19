@@ -28,8 +28,8 @@ SConscript('mbs/SConscript')
 Import('atEnv')
 
 # Create a build environment for the ARM9 based netX chips.
-env_arm9 = atEnv.DEFAULT.CreateEnvironment(['gcc-arm-none-eabi-4.7', 'asciidoc'])
-env_arm9.CreateCompilerEnv('NETX500', ['arch=armv5te'])
+env_arm9 = atEnv.DEFAULT.CreateEnvironment(['gcc-arm-none-eabi-9.2', 'asciidoc'])
+env_arm9.CreateCompilerEnv('NETX500', ['arm', 'arch=armv5te+fp', 'float-abi=softfp'])
 
 # Build the platform libraries.
 SConscript('platform/SConscript')
