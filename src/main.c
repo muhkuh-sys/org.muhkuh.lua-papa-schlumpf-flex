@@ -72,6 +72,7 @@ void test_main(void)
 
 	systime_init();
 	uprintf_buffer_init();
+	usb_init();
 
 	/* Set the serial vectors. */
 	memcpy(&tSerialVectors, &tSerialVectors_USB, sizeof(SERIAL_COMM_UI_FN_T));
