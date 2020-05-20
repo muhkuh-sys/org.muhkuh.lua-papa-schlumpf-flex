@@ -30,7 +30,7 @@ node {
                 sh "python3 build_artifact.py ${atEntry[0]} ${atEntry[1]} ${atEntry[2]}"
 
                 /* Archive all artifacts. */
-                archiveArtifacts artifacts: "${ARTIFACTS_PATH0}/*.tar.xz,${ARTIFACTS_PATH0}/*.xml,${ARTIFACTS_PATH0}/*.hash,${ARTIFACTS_PATH0}/*.pom"
+                archiveArtifacts artifacts: "${ARTIFACTS_PATH}/*.tar.xz,${ARTIFACTS_PATH}/*.xml,${ARTIFACTS_PATH}/*.hash,${ARTIFACTS_PATH}/*.pom"
 
                 /* Clean up after the build. */
                 sh 'rm -rf .[^.] .??* *'
