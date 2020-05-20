@@ -105,7 +105,7 @@ SET(CPACK_PACKAGE_FILE_NAME "lua${BUILDCFG_LUA_VERSION}-papa-schlumpf-flex-${PRO
 	INSTALL(FILES ${CMAKE_HOME_DIRECTORY}/lua/papa_schlumpf_flex.lua
 	        DESTINATION lua/)
 
-	INSTALL(FILES ${CMAKE_HOME_DIRECTORY}/targets/papa_schlumpf_stumpf_cifx4000.img
+	INSTALL(FILES ${CMAKE_HOME_DIRECTORY}/targets/papa_schlumpf_flex.img
 	        DESTINATION firmware/)
 
 	INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/package/install.lua
