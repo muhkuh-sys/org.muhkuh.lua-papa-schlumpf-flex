@@ -33,7 +33,7 @@ SET_SOURCE_FILES_PROPERTIES(papa_schlumpf.i PROPERTIES CPLUSPLUS ON)
 SET_PROPERTY(SOURCE papa_schlumpf.i PROPERTY SWIG_FLAGS -I${CMAKE_HOME_DIRECTORY})
 
 IF(CMAKE_VERSION VERSION_LESS 3.8.0)
-	SWIG_ADD_MODULE(TARGET_papa_schlumpf lua papa_schlumpf.i papa_schlumpf.cpp papa_schlumpf_device.cpp)
+	SWIG_ADD_MODULE(TARGET_papa_schlumpf lua papa_schlumpf.i papa_schlumpf.cpp)
 ELSE(CMAKE_VERSION VERSION_LESS 3.8.0)
 	SWIG_ADD_LIBRARY(TARGET_papa_schlumpf
 	                 TYPE MODULE
