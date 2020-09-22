@@ -17,6 +17,6 @@
 	<dependencies>
 		<build-dependency group="org.lua" module="lua" artifact="lua" version="5.4"/>
 		<dependency group="org.lua" module="lua" artifact="lua"/>
-		<dependency group="org.luajit" module="bitop" artifact="lua5.1-bitop" version="1.0"/>
+		<dependency group="org.luajit" module="bitop" artifact="lua5.4-bitop" version="1.0"/>
 	</dependencies>
 </jonchki-artifact>
