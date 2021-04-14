@@ -1,0 +1,21 @@
+ACTION!="add|change|move|bind", GOTO="hilscher_papa_schlumpf_rules_end"
+
+#-----------------------------------------------------------------------------
+#
+# rules for USB infterface of Hilscher Papa Schlumpf
+#
+SUBSYSTEM!="usb", GOTO="hilscher_papa_schlumpf_usb_rules_end"
+ENV{DEVTYPE}!="usb_device", GOTO="hilscher_papa_schlumpf_usb_rules_end"
+
+# Papa Schlumpf V1
+ATTRS{idVendor}=="1939", ATTRS{idProduct}=="0028", MODE="660", GROUP="plugdev" TAG+="uaccess"
+
+# blacklist all Hilscher devices for ModemManager
+ATTRS{idVendor}=="1939", ENV{ID_MM_TTY_BLACKLIST}="1"
+
+LABEL="hilscher_papa_schlumpf_usb_rules_end"
+
+
+#-----------------------------------------------------------------------------
+
+LABEL="hilscher_papa_schlumpf_rules_end"
