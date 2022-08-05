@@ -31,8 +31,7 @@ def parse():
         strJonchkiDistributionID = sys.argv[1]
         strJonchkiDistributionVersion = None
         strJonchkiCPUArchitecture = sys.argv[2]
-        if(strJonchkiDistributionID != 'windows' and
-           strJonchkiDistributionID != 'raspberry'):
+        if strJonchkiDistributionID != 'windows':
             raise Exception('No distribution version specified. This is only '
                             'possible for windows and raspebrry.')
 
