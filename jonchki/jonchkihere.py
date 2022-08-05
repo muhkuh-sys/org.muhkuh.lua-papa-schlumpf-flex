@@ -25,7 +25,6 @@ import os
 import platform
 import re
 import shutil
-import string
 import subprocess
 import sys
 import tarfile
@@ -40,7 +39,7 @@ except ImportError:
     from urllib2 import urlopen, HTTPError
 
 
-strDefaultJonchkiVersion = '0.0.5.1'
+strDefaultJonchkiVersion = '0.0.8.1'
 
 
 class ProgressOutput:
@@ -74,7 +73,7 @@ class ProgressOutput:
         else:
             # Try to get a maximum of 20 lines at a maximum of 1MB dots.
             sizMaxLines = 20
-            sizDot = round(sizTotal / self.m_uiDotsPerLine / sizMaxLines)
+            sizDot = sizTotal / self.m_uiDotsPerLine / sizMaxLines
             if sizDot > 1024 * 1024:
                 sizDot = 1024 * 1024
             elif sizDot < 2048:
@@ -106,7 +105,7 @@ class ProgressOutput:
 
             # Get the end position of the line in bytes.
             sizLineEnd = self.m_uiLinePositionStart
-            sizLineEnd += self.m_uiDotsPerLine * self.m_sizDot
+            sizLineEnd += int((self.m_uiDotsPerLine * self.m_sizDot) + 0.5)
             sizDownloaded = self.m_sizCurrent + sizData
             if sizLineEnd > sizDownloaded:
                 sizLineEnd = sizDownloaded
@@ -115,7 +114,7 @@ class ProgressOutput:
             # Get the number of bytes in this line.
             sizDotBytes = sizLineEnd - self.m_uiLinePositionStart
             # Get the number of new dots in this line.
-            sizDots = int(sizDotBytes / self.m_sizDot)
+            sizDots = int((sizDotBytes / self.m_sizDot) + 0.5)
             sizDots -= self.m_uiDotsPrintedInCurrentLine
             # Print the new dots.
             sys.stdout.write('.' * sizDots)
@@ -191,9 +190,10 @@ class PlatformDetect:
         strCpuArchitecture = None
 
         # Try to parse the output of the 'getconf LONG_BIT' command.
-        strOutput = subprocess.check_output(
-            ['getconf', 'LONG_BIT']
-        ).decode("utf-8", "replace")
+        strOutput = subprocess.check_output(['getconf', 'LONG_BIT']).decode(
+            "utf-8",
+            "replace"
+        )
         strOutputStrip = strOutput.strip()
         if strOutputStrip == '32':
             strCpuArchitecture = 'x86'
@@ -212,9 +212,10 @@ class PlatformDetect:
         }
 
         # Try to parse the output of the 'lscpu' command.
-        strOutput = subprocess.check_output(
-            ['lscpu']
-        ).decode("utf-8", "replace")
+        strOutput = subprocess.check_output(['lscpu']).decode(
+            "utf-8",
+            "replace"
+        )
         tMatch = re.search(r'Architecture: *(\S+)', strOutput)
         if tMatch is None:
             raise Exception('Failed to get the CPU architecture with "lscpu".')
