@@ -7,9 +7,9 @@
 #define PAPA_SCHLUMPF_USB_PRODUCT_ID              0x0028
 #define PAPA_SCHLUMPF_USB_PRODUCT_RELEASE         0x0001
 
-//#define PAPA_SCHLUMPF_MAXIMUM_PACKET_SIZE         2048
+#define PAPA_SCHLUMPF_MAXIMUM_PACKET_SIZE         0x0f80
 // DEBUG: To test chunking.
-#define PAPA_SCHLUMPF_MAXIMUM_PACKET_SIZE         128
+//#define PAPA_SCHLUMPF_MAXIMUM_PACKET_SIZE         128
 
 /* Commands received over USB. */
 typedef enum PAPA_SCHLUMPF_USB_COMMAND_ENUM

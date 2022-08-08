@@ -115,7 +115,7 @@ static const unsigned char aucProduct_eng[] =
 	0x1c,
 	0x03,
 
-	'P', 0, 'a', 0, 'p', 0, 'a', 0, ' ', 0, 'S', 0, 'c', 0, 'h', 0, 
+	'P', 0, 'a', 0, 'p', 0, 'a', 0, ' ', 0, 'S', 0, 'c', 0, 'h', 0,
 	'l', 0, 'u', 0, 'm', 0, 'p', 0, 'f', 0
 };
 
@@ -192,8 +192,8 @@ void sendDescriptor(unsigned int uiMaximumLength, unsigned int uiDescriptorLengt
 }
 
 
-static packet_handler_stall_req_t sendStringDescriptor(unsigned int languageId, unsigned int uiStringIdx, unsigned int uiMaximumLength)                                                                                                                                            
-{                                                                            
+static packet_handler_stall_req_t sendStringDescriptor(unsigned int languageId, unsigned int uiStringIdx, unsigned int uiMaximumLength)
+{
 	const unsigned char *pucStringDescriptor;
 	packet_handler_stall_req_t tResult;
 

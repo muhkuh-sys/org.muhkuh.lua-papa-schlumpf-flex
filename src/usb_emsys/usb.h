@@ -26,7 +26,7 @@
 #include <stddef.h>
 
 
-#define MONITOR_USB_MAX_PACKET_SIZE 2048
+#define PAPA_SCHLUMPF_MAX_PACKET_SIZE 0x0f80
 
 void usb_deinit(void);
 void usb_init(void);

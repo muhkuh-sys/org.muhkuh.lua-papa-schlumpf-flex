@@ -11,7 +11,7 @@
 
 static union
 {
-	unsigned char auc[MONITOR_USB_MAX_PACKET_SIZE];
+	unsigned char auc[PAPA_SCHLUMPF_MAX_PACKET_SIZE];
 	PAPA_SCHLUMPF_USB_COMMAND_T s;
 } uPacketBufferRx;
 unsigned int sizPacketBufferRxFilled;
@@ -23,11 +23,11 @@ void usb_activateInputPipe(void)
 
 
 	/* Select pipe 2. */
-	ptUsbCoreArea->ulPIPE_SEL = 0x02;
+	ptUsbCoreArea->ulPIPE_SEL = 2;
 	/* Set data pointer to Usb_Ep2_Buffer. */
 	ptUsbCoreArea->ulPIPE_DATA_PTR = Usb_Ep2_Buffer>>2;
 	/* Enable pipe 2. */
-	ptUsbCoreArea->ulPIPE_DATA_TBYTES = MSK_USB_PIPE_DATA_TBYTES_DBV | Usb_Ep2_PacketSize;
+	ptUsbCoreArea->ulPIPE_DATA_TBYTES = MSK_USB_PIPE_DATA_TBYTES_DBV | Usb_Ep2_BufferSize;
 }
 
 
@@ -170,11 +170,11 @@ void usb_pingpong(void)
 				/* Get the packetsize in bytes. */
 				ulValue  = ptUsbCoreArea->ulPIPE_DATA_TBYTES;
 				ulValue &= ~MSK_USB_PIPE_DATA_TBYTES_DBV;
-				ulPacketSize = Usb_Ep2_PacketSize - ulValue;
+				ulPacketSize = Usb_Ep2_BufferSize - ulValue;
 				if( ulPacketSize<=Usb_Ep2_PacketSize )
 				{
 					/* Is enough space left in the buffer? */
-					if( (sizPacketBufferRxFilled+ulPacketSize)>MONITOR_USB_MAX_PACKET_SIZE )
+					if( (sizPacketBufferRxFilled+ulPacketSize)>sizeof(uPacketBufferRx) )
 					{
 						/* No.
 						 * TODO: discard the packet.
@@ -211,34 +211,34 @@ void usb_pingpong(void)
 void usb_handleReset(void)
 {
 	HOSTDEF(ptUsbCoreArea);
-        unsigned int event;
+	unsigned int event;
 	unsigned long ulValue;
 
 
-        // get the pending port events
-        event  = ptUsbCoreArea->ulPSC_EV;
-        event &= MSK_USB_PSC_EV_URES_EV;
+	// get the pending port events
+	event  = ptUsbCoreArea->ulPSC_EV;
+	event &= MSK_USB_PSC_EV_URES_EV;
 
-        // check for USB Reset event
-        if( event!=0 )
+	// check for USB Reset event
+	if( event!=0 )
 	{
-                // clear the reset event
-                ptUsbCoreArea->ulPSC_EV = event;
+		// clear the reset event
+		ptUsbCoreArea->ulPSC_EV = event;
 
-                // set end point 0 packet size
-                ptUsbCoreArea->ulPIPE_CFG = Usb_Ep0_PacketSize;
+		// set end point 0 packet size
+		ptUsbCoreArea->ulPIPE_CFG = Usb_Ep0_PacketSize;
 
-                // go to default state
-                globalState = USB_State_Default;
+		// go to default state
+		globalState = USB_State_Default;
 
-                // reset current configuration (as if we had more than one)
-                currentConfig = 0;
+		// reset current configuration (as if we had more than one)
+		currentConfig = 0;
 
-                tOutTransactionNeeded = USB_SetupTransaction_NoOutTransaction;
-                tReceiveEpState = USB_ReceiveEndpoint_Running;
-                tSendEpState = USB_SendEndpoint_Idle;
+		tOutTransactionNeeded = USB_SetupTransaction_NoOutTransaction;
+		tReceiveEpState = USB_ReceiveEndpoint_Running;
+		tSendEpState = USB_SendEndpoint_Idle;
 
-                // configure the pipes
+		// configure the pipes
 
 		/* Select pipe #1. */
 		ptUsbCoreArea->ulPIPE_SEL = 1;
@@ -264,7 +264,7 @@ void usb_handleReset(void)
 		/* Set data pointer to Usb_Ep2_Buffer. */
 		ptUsbCoreArea->ulPIPE_DATA_PTR = Usb_Ep2_Buffer>>2;
 		/* Data buffer valid, ready to receive bytes. */
-		ptUsbCoreArea->ulPIPE_DATA_TBYTES = MSK_USB_PIPE_DATA_TBYTES_DBV | Usb_Ep2_PacketSize;
+		ptUsbCoreArea->ulPIPE_DATA_TBYTES = MSK_USB_PIPE_DATA_TBYTES_DBV | Usb_Ep2_BufferSize;
 		/* Activate pipe and set direction to 'output'. */
 		ptUsbCoreArea->ulPIPE_CTRL = MSK_USB_PIPE_CTRL_ACT | DEF_USB_PIPE_CTRL_TPID_OUT;
 	}

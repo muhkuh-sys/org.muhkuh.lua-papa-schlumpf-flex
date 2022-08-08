@@ -22,18 +22,18 @@
 #include "usb_requests_common.h"
 
 
-#ifndef __descriptors__
-#define __descriptors__
+#ifndef __USB_DESCRIPTORS_H__
+#define __USB_DESCRIPTORS_H__
 
 
-//---------------------------------------------------------------------------
+/*-------------------------------------------------------------------------*/
 
 void usb_descriptors_init(void);
 packet_handler_stall_req_t getDescriptor(setupPacket_t *pPacket);
 void sendDescriptor(unsigned int requiredLength, unsigned int descriptorLength, const unsigned char *descriptor);
 
-//---------------------------------------------------------------------------
+/*-------------------------------------------------------------------------*/
 
 
-#endif  // __descriptors__
+#endif  /* __USB_DESCRIPTORS_H__ */
 

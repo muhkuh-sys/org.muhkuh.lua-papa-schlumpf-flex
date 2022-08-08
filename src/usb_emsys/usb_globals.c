@@ -20,26 +20,24 @@
 
 #include "usb_globals.h"
 
-//---------------------------------------------------------------------------
+/*-------------------------------------------------------------------------*/
 
 USB_State_t globalState;
 
 unsigned int currentConfig;
 
-// buffer for setup and data packets
-unsigned char setupBuffer[Usb_Ep0_PacketSize];
-unsigned char receiveBuffer[Usb_Ep1_PacketSize];
+/* Buffer for setup and data packets. */
+unsigned char setupBuffer[Usb_Ep0_BufferSize];
 
-// decoded packet
+/* Decoded packet. */
 setupPacket_t tSetupPkt;
-// out transaction needed
+/* Out transaction needed. */
 USB_SetupTransaction_t tOutTransactionNeeded;
 
 USB_ReceiveEndpoint_t tReceiveEpState;
 USB_SendEndpoint_t tSendEpState;
 
-// new address for pending address change
+/* New address for pending address change. */
 unsigned int uiNewAddress;
 
-//---------------------------------------------------------------------------
-
+/*-------------------------------------------------------------------------*/

@@ -36,10 +36,15 @@
 #define Usb_Ep1_PacketSize      0x40
 #define Usb_Ep2_PacketSize      0x40
 
-// enpoint buffers
+// buffer size for endpoints
+#define Usb_Ep0_BufferSize      0x0040
+#define Usb_Ep1_BufferSize      0x0f00
+#define Usb_Ep2_BufferSize      0x0080
+
+// endpoint buffers
 #define Usb_Ep0_Buffer          0x0000
 #define Usb_Ep1_Buffer          0x0080
-#define Usb_Ep2_Buffer          0x0100
+#define Usb_Ep2_Buffer          0x0f80
 
 //-------------------------------------
 
@@ -96,8 +101,7 @@ extern USB_State_t globalState;
 extern unsigned int currentConfig;
 
 // buffer for setup packets
-extern unsigned char setupBuffer[Usb_Ep0_PacketSize];
-extern unsigned char receiveBuffer[Usb_Ep1_PacketSize];
+extern unsigned char setupBuffer[Usb_Ep0_BufferSize];
 
 // decoded packet
 extern setupPacket_t tSetupPkt;
