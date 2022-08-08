@@ -14,6 +14,7 @@
 
 
 extern volatile unsigned long *g_pul_PCI_DMA_Buffer_Start;
+extern volatile unsigned long *g_pul_PCI_DMA_Buffer_End;
 
 
 static void execute_command_get_firmware_version(void)
@@ -90,6 +91,52 @@ static void execute_command_dma_mem_read(PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_READ_
 		tPacket.ulStatus = USB_COMMAND_STATUS_PciTransferFailed;
 	}
 	usb_send_packet((unsigned char*)(&tPacket), sizeof(tPacket));
+}
+
+
+
+static PAPA_SCHLUMPF_USB_COMMAND_RESULT_DMA_MEM_READ_AREA_T tReadAreaResponse;
+static void execute_command_dma_mem_read_area(PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_READ_AREA_T *ptCommand)
+{
+	int iResult;
+	unsigned long ulSize;
+	unsigned long ulSizeRoundedUp;
+	unsigned int uiSizeDw;
+	size_t sizUsbPacket;
+
+	/* Round the size of the read request up to the next DWORD and convert the byte size to a DWORD size. */
+	ulSize = ptCommand->ulSize;
+	ulSizeRoundedUp = (ulSize + 3U) & 0xfffffffcU;
+	uiSizeDw = ulSizeRoundedUp / sizeof(uint32_t);
+
+	/* Does the requested size exceed the PCI DMA buffer? */
+	if( ulSizeRoundedUp>(unsigned int)(g_pul_PCI_DMA_Buffer_End - g_pul_PCI_DMA_Buffer_Start) )
+	{
+		tReadAreaResponse.ulStatus = USB_COMMAND_STATUS_InvalidSize;
+		sizUsbPacket = sizeof(uint32_t);
+	}
+	/* Does the request exceed the USB buffer? */
+	else if( ulSize>sizeof(tReadAreaResponse.aucData) )
+	{
+		tReadAreaResponse.ulStatus = USB_COMMAND_STATUS_InvalidSize;
+		sizUsbPacket = sizeof(uint32_t);
+	}
+	else
+	{
+		iResult = pciDma_MemRead(ptCommand->ulDeviceAddress, g_pul_PCI_DMA_Buffer_Start, uiSizeDw);
+		if( iResult==0 )
+		{
+			tReadAreaResponse.ulStatus = USB_COMMAND_STATUS_Ok;
+			memcpy(tReadAreaResponse.aucData, g_pul_PCI_DMA_Buffer_Start, ulSize);
+			sizUsbPacket = sizeof(uint32_t) + ulSize;
+		}
+		else
+		{
+			tReadAreaResponse.ulStatus = USB_COMMAND_STATUS_PciTransferFailed;
+			sizUsbPacket = sizeof(uint32_t);
+		}
+	}
+	usb_send_packet((unsigned char*)(&tReadAreaResponse), sizUsbPacket);
 }
 
 
@@ -234,6 +281,7 @@ void execute_command(PAPA_SCHLUMPF_USB_COMMAND_T *ptCommand)
 	case PAPA_SCHLUMPF_USB_COMMAND_ResetPCI:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMAIoRead:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMAMemRead:
+	case PAPA_SCHLUMPF_USB_COMMAND_DMAMemReadArea:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMACfg0Read:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMACfg1Read:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMAIoWrite:
@@ -260,13 +308,17 @@ void execute_command(PAPA_SCHLUMPF_USB_COMMAND_T *ptCommand)
 		case PAPA_SCHLUMPF_USB_COMMAND_ResetPCI:
 			execute_command_reset_pci((PAPA_SCHLUMPF_USB_COMMAND_RESET_PCI_T*)ptCommand);
 			break;
-		
+
 		case PAPA_SCHLUMPF_USB_COMMAND_DMAIoRead:
 			execute_command_dma_io_read((PAPA_SCHLUMPF_USB_COMMAND_DMA_IO_READ_T*)ptCommand);
 			break;
 
 		case PAPA_SCHLUMPF_USB_COMMAND_DMAMemRead:
 			execute_command_dma_mem_read((PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_READ_T*)ptCommand);
+			break;
+
+		case PAPA_SCHLUMPF_USB_COMMAND_DMAMemReadArea:
+			execute_command_dma_mem_read_area((PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_READ_AREA_T*)ptCommand);
 			break;
 
 		case PAPA_SCHLUMPF_USB_COMMAND_DMACfg0Read:

@@ -25,7 +25,9 @@ typedef enum PAPA_SCHLUMPF_RESULT_ENUM
 	PAPA_SCHLUMPF_RESULT_USBError = -2,
 	PAPA_SCHLUMPF_RESULT_MoreThanOneDeviceFound = -3,
 	PAPA_SCHLUMPF_RESULT_NoDeviceFound = -4,
-	PAPA_SCHLUMPF_RESULT_CommandFailed = -5
+	PAPA_SCHLUMPF_RESULT_CommandFailed = -5,
+	PAPA_SCHLUMPF_RESULT_InvalidSize = -6,
+	PAPA_SCHLUMPF_RESULT_OutOfMemory = -7
 } PAPA_SCHLUMPF_RESULT_T;
 
 
@@ -40,10 +42,12 @@ public:
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR resetPCI(uint32_t ulResetActiveToClock, uint32_t ulResetActiveDelayAfterClock, uint32_t ulBusIdleDelay);
 	RESULT_INT_NOTHING_OR_NIL_WITH_ERR ioRead(uint32_t ulAddress, PUL_ARGUMENT_OUT pulData);
 	RESULT_INT_NOTHING_OR_NIL_WITH_ERR memRead(uint32_t ulAddress, PUL_ARGUMENT_OUT pulData);
+	RESULT_INT_NOTHING_OR_NIL_WITH_ERR memReadArea(uint32_t ulAddress, uint32_t ulSize, char **ppcBUFFER_OUT, size_t *psizBUFFER_OUT);
 	RESULT_INT_NOTHING_OR_NIL_WITH_ERR cfg0Read(uint32_t ulAddress, PUL_ARGUMENT_OUT pulData);
 	RESULT_INT_NOTHING_OR_NIL_WITH_ERR cfg1Read(uint32_t ulAddress, PUL_ARGUMENT_OUT pulData);
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR ioWrite(uint32_t ulAddress, uint32_t ulData);
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR memWrite(uint32_t ulAddress, uint32_t ulData);
+//	RESULT_INT_TRUE_OR_NIL_WITH_ERR memWriteArea(uint32_t ulAddress, const char *pcBUFFER_IN, size_t sizBUFFER_IN);
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR cfg0Write(uint32_t ulAddress, uint32_t ulData);
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR cfg1Write(uint32_t ulAddress, uint32_t ulData);
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR disconnect(void);

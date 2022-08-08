@@ -305,6 +305,129 @@ RESULT_INT_NOTHING_OR_NIL_WITH_ERR PapaSchlumpfFlex::memRead(uint32_t ulAddress,
 
 
 
+/* Make the buffer a little bit bigger to allow proper termination of transactions.
+ * The netX sends a zero packet regardless of if the maximum transaction size was reached or not.
+ * If the PC uses the maximum transaction size for the read request, the following zero packet will not
+ * be received and is stuck in the netX.
+ *
+ * Example:
+ * The maximum transaction size is set to 128 bytes. If the PC requests a memory size of 124, the netX will
+ * respond with 4 bytes status plus 124 bytes data. This makes 128 bytes in total. The netX will also send
+ * a zero packet to terminate the transaction. If the PC limits the read operation to 128 bytes, it will
+ * not wait for the following zero packet sent by the netX. It messes up the following communication.
+ */
+typedef union BIGGER_U
+{
+	PAPA_SCHLUMPF_USB_COMMAND_RESULT_DMA_MEM_READ_AREA_T tResponse;
+	unsigned char auc[sizeof(PAPA_SCHLUMPF_USB_COMMAND_RESULT_DMA_MEM_READ_AREA_T) + 4];
+} BIGGER_T;
+RESULT_INT_NOTHING_OR_NIL_WITH_ERR PapaSchlumpfFlex::memReadArea(uint32_t ulAddress, uint32_t ulSize, char **ppcBUFFER_OUT, size_t *psizBUFFER_OUT)
+{
+	PAPA_SCHLUMPF_RESULT_T tResult;
+	int iResult;
+	int iTransfered;
+	char *pcBuffer;
+	uint32_t ulOffset;
+	uint32_t ulChunk;
+	uint32_t ulChunkMax;
+	PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_READ_AREA_T tCommand;
+	BIGGER_T tBigger;
+
+
+	if( m_ptDevHandlePapaSchlumpf==NULL )
+	{
+		tResult = PAPA_SCHLUMPF_RESULT_NotConnected;
+	}
+	else if( ulSize==0 )
+	{
+		tResult = PAPA_SCHLUMPF_RESULT_InvalidSize;
+	}
+	else
+	{
+		/* Allocate the buffer for the received data. */
+		pcBuffer = (char*)malloc(ulSize);
+		if( pcBuffer==NULL )
+		{
+			tResult = PAPA_SCHLUMPF_RESULT_OutOfMemory;
+		}
+		else
+		{
+			/* Cut the read command in chunks. */
+			tResult = PAPA_SCHLUMPF_RESULT_Ok;
+			ulOffset = 0;
+			ulChunkMax = sizeof(tBigger.tResponse.aucData);
+			while( ulOffset<ulSize )
+			{
+				ulChunk = ulSize - ulOffset;
+				if( ulChunk>ulChunkMax )
+				{
+					ulChunk = ulChunkMax;
+				}
+				fprintf(stderr, "%s: request %d bytes.\n", m_pcPluginId, ulChunk);
+
+				tCommand.ulCommand = PAPA_SCHLUMPF_USB_COMMAND_DMAMemReadArea;
+				tCommand.ulDeviceAddress = ulAddress + ulOffset;
+				tCommand.ulSize = ulChunk;
+				iResult = __send_packet((const unsigned char *)&tCommand, sizeof(tCommand), 100);
+				if( iResult!=0 )
+				{
+					fprintf(stderr, "%s: failed to send packet: %d\n", m_pcPluginId, iResult);
+					tResult = PAPA_SCHLUMPF_RESULT_USBError;
+				}
+				else
+				{
+					iResult = __receivePacket(tBigger.auc, sizeof(tBigger), &iTransfered, 500);
+					fprintf(stderr, "%s: received %d bytes\n", m_pcPluginId, iTransfered);
+					if( iResult!=0 )
+					{
+						fprintf(stderr, "%s: failed to receive packet: %d\n", m_pcPluginId, iResult);
+						tResult = PAPA_SCHLUMPF_RESULT_USBError;
+					}
+					else if( iTransfered<sizeof(uint32_t) )
+					{
+						fprintf(stderr, "%s: the received packet is too small, it has only %d bytes.\n", m_pcPluginId, iTransfered);
+						tResult = PAPA_SCHLUMPF_RESULT_USBError;
+					}
+					else if( tBigger.tResponse.ulStatus!=USB_COMMAND_STATUS_Ok )
+					{
+						fprintf(stderr, "%s: received an error: %d.\n", m_pcPluginId, tBigger.tResponse.ulStatus);
+						tResult = PAPA_SCHLUMPF_RESULT_CommandFailed;
+					}
+					else if( iTransfered!=sizeof(uint32_t)+ulChunk )
+					{
+						fprintf(stderr, "%s: received an unexpected amount of data. wanted %zd bytes, but got %d.\n", m_pcPluginId, sizeof(uint32_t)+ulChunk, iTransfered);
+						tResult = PAPA_SCHLUMPF_RESULT_USBError;
+					}
+					else
+					{
+						memcpy(pcBuffer+ulOffset, tBigger.tResponse.aucData, ulChunk);
+						ulOffset += ulChunk;
+					}
+				}
+
+				if( tResult!=PAPA_SCHLUMPF_RESULT_Ok )
+				{
+					break;
+				}
+			}
+
+			if( tResult==PAPA_SCHLUMPF_RESULT_Ok )
+			{
+				*ppcBUFFER_OUT = pcBuffer;
+				*psizBUFFER_OUT = ulSize;
+			}
+			else
+			{
+				free(pcBuffer);
+			}
+		}
+	}
+
+	return tResult;
+}
+
+
+
 RESULT_INT_NOTHING_OR_NIL_WITH_ERR PapaSchlumpfFlex::cfg0Read(uint32_t ulAddress, PUL_ARGUMENT_OUT pulData)
 {
 	PAPA_SCHLUMPF_RESULT_T tResult;
