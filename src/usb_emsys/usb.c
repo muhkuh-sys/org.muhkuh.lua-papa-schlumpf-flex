@@ -168,13 +168,13 @@ void usb_send_packet(const unsigned char *pucPacket, size_t sizPacket)
 }
 
 
+#if 0
 unsigned long usb_get_rx_fill_level(void)
 {
 	return 0;
 }
 
 
-#if 0
 unsigned char usb_get_byte(void)
 {
 	unsigned char ucData;
