@@ -73,15 +73,21 @@ end
 
 
 
-function papaSchlumpfFlex:CFG1ADR(ulBus, ulDevice, ulFunction, ulRegister)
+function papaSchlumpfFlex:CFG1ADR(ulBus, ulDevice, ulFunction, ulRegister, ulParityFakeBit)
   local bit = self.bit
   local PCIADR = self.PCIADR
+
+  local ulParityFake = 0
+  if ulParityFakeBit~=nil then
+    ulParityFake = bit.lshift(1, ulParityFakeBit)
+  end
 
   return bit.bor(
     bit.band(bit.lshift(ulBus, PCIADR.SRT_PCI_CONFIGURATION_ADDRESS_BUS), PCIADR.MSK_PCI_CONFIGURATION_ADDRESS_BUS),
     bit.band(bit.lshift(ulDevice, PCIADR.SRT_PCI_CONFIGURATION_ADDRESS_DEVICE), PCIADR.MSK_PCI_CONFIGURATION_ADDRESS_DEVICE),
     bit.band(bit.lshift(ulFunction, PCIADR.SRT_PCI_CONFIGURATION_ADDRESS_FUNCTION), PCIADR.MSK_PCI_CONFIGURATION_ADDRESS_FUNCTION),
-    bit.band(bit.lshift(ulRegister, PCIADR.SRT_PCI_CONFIGURATION_ADDRESS_REGISTER), PCIADR.MSK_PCI_CONFIGURATION_ADDRESS_REGISTER)
+    bit.band(bit.lshift(ulRegister, PCIADR.SRT_PCI_CONFIGURATION_ADDRESS_REGISTER), PCIADR.MSK_PCI_CONFIGURATION_ADDRESS_REGISTER),
+    ulParityFake
   )
 end
 
