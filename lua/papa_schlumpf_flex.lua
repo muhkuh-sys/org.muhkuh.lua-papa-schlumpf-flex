@@ -116,7 +116,13 @@ function papaSchlumpfFlex:connect()
     tLog.error('Failed to connect: %s', strError)
   else
     local ulMajor, ulMinor, ulSub, strVcs = tP:getFirmwareVersion()
-    tLog.debug('Using firmware v%d.%d.%d %s.', ulMajor, ulMinor, ulSub, strVcs)
+    if ulMajor==nil then
+      tResult = nil
+      strError = tostring(ulMinor)
+      tLog.error('Failed to get the version information: %s', strError)
+    else
+      tLog.debug('Using firmware v%d.%d.%d %s.', ulMajor, ulMinor, ulSub, strVcs)
+    end
   end
 
   return tResult, strError
