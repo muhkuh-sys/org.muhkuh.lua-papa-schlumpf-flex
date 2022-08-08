@@ -47,7 +47,7 @@ public:
 	RESULT_INT_NOTHING_OR_NIL_WITH_ERR cfg1Read(uint32_t ulAddress, PUL_ARGUMENT_OUT pulData);
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR ioWrite(uint32_t ulAddress, uint32_t ulData);
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR memWrite(uint32_t ulAddress, uint32_t ulData);
-//	RESULT_INT_TRUE_OR_NIL_WITH_ERR memWriteArea(uint32_t ulAddress, const char *pcBUFFER_IN, size_t sizBUFFER_IN);
+	RESULT_INT_TRUE_OR_NIL_WITH_ERR memWriteArea(uint32_t ulAddress, const char *pcBUFFER_IN, size_t sizBUFFER_IN);
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR cfg0Write(uint32_t ulAddress, uint32_t ulData);
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR cfg1Write(uint32_t ulAddress, uint32_t ulData);
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR disconnect(void);

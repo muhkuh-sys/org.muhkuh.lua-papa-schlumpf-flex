@@ -644,6 +644,103 @@ RESULT_INT_TRUE_OR_NIL_WITH_ERR PapaSchlumpfFlex::memWrite(uint32_t ulAddress, u
 
 
 
+RESULT_INT_TRUE_OR_NIL_WITH_ERR PapaSchlumpfFlex::memWriteArea(uint32_t ulAddress, const char *pcBUFFER_IN, size_t sizBUFFER_IN)
+{
+	PAPA_SCHLUMPF_RESULT_T tResult;
+	int iResult;
+	int iSendSize;
+	int iTransfered;
+	char *pcBuffer;
+	uint32_t ulOffset;
+	uint32_t ulChunk;
+	uint32_t ulChunkMax;
+	PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_WRITE_AREA_T tCommand;
+	PAPA_SCHLUMPF_USB_COMMAND_RESULT_STATUS_T tResponse;
+
+
+	if( m_ptDevHandlePapaSchlumpf==NULL )
+	{
+		tResult = PAPA_SCHLUMPF_RESULT_NotConnected;
+	}
+	else if( sizBUFFER_IN==0 )
+	{
+		tResult = PAPA_SCHLUMPF_RESULT_InvalidSize;
+	}
+	else
+	{
+		/* Cut the read command in chunks. */
+		tResult = PAPA_SCHLUMPF_RESULT_Ok;
+		ulOffset = 0;
+		ulChunkMax = sizeof(tCommand.aucData);
+//		ulChunkMax = 112;
+		while( ulOffset<sizBUFFER_IN )
+		{
+			ulChunk = sizBUFFER_IN - ulOffset;
+			if( ulChunk>ulChunkMax )
+			{
+				ulChunk = ulChunkMax;
+			}
+			fprintf(stderr, "%s: write %d bytes.\n", m_pcPluginId, ulChunk);
+
+			tCommand.ulCommand = PAPA_SCHLUMPF_USB_COMMAND_DMAMemWriteArea;
+			tCommand.ulDeviceAddress = ulAddress + ulOffset;
+			tCommand.ulSize = ulChunk;
+			memcpy(tCommand.aucData, pcBUFFER_IN+ulOffset, ulChunk);
+			iSendSize = sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t) + ulChunk;
+			iResult = __send_packet((const unsigned char *)&tCommand, iSendSize, 500);
+			if( iResult!=0 )
+			{
+				fprintf(stderr, "%s: failed to send packet: %d\n", m_pcPluginId, iResult);
+				tResult = PAPA_SCHLUMPF_RESULT_USBError;
+			}
+			else
+			{
+				/* Terminate the transaction with a ZLP if the last block was full. */
+				if( (iSendSize&0x0000003f)==0 )
+				{
+					iResult = __send_packet(NULL, 0, 100);
+					if( iResult!=0 )
+					{
+						fprintf(stderr, "%s: failed to send ZLP packet: %d\n", m_pcPluginId, iResult);
+						tResult = PAPA_SCHLUMPF_RESULT_USBError;
+					}
+				}
+				if( tResult==PAPA_SCHLUMPF_RESULT_Ok )
+				{
+					iResult = __receivePacket((unsigned char*)&tResponse, sizeof(tResponse), &iTransfered, 500);
+					fprintf(stderr, "%s: received %d bytes\n", m_pcPluginId, iTransfered);
+					if( iResult!=0 )
+					{
+						fprintf(stderr, "%s: failed to receive packet: %d\n", m_pcPluginId, iResult);
+						tResult = PAPA_SCHLUMPF_RESULT_USBError;
+					}
+					else if( iTransfered!=sizeof(tResponse) )
+					{
+						fprintf(stderr, "%s: received an unexpected amount of data. wanted %zd bytes, but got %d.\n", m_pcPluginId, sizeof(tResponse), iTransfered);
+						tResult = PAPA_SCHLUMPF_RESULT_USBError;
+					}
+					else if( tResponse.ulStatus!=USB_COMMAND_STATUS_Ok )
+					{
+						fprintf(stderr, "%s: received an error: %d.\n", m_pcPluginId, tResponse.ulStatus);
+						tResult = PAPA_SCHLUMPF_RESULT_CommandFailed;
+					}
+				}
+			}
+
+			ulOffset += ulChunk;
+
+			if( tResult!=PAPA_SCHLUMPF_RESULT_Ok )
+			{
+				break;
+			}
+		}
+	}
+
+	return tResult;
+}
+
+
+
 RESULT_INT_TRUE_OR_NIL_WITH_ERR PapaSchlumpfFlex::cfg0Write(uint32_t ulAddress, uint32_t ulData)
 {
 	PAPA_SCHLUMPF_RESULT_T tResult;

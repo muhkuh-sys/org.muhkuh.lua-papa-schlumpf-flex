@@ -224,6 +224,47 @@ static void execute_command_dma_mem_write(PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_WRIT
 
 
 
+static void execute_command_dma_mem_write_area(PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_WRITE_AREA_T *ptCommand)
+{
+	int iResult;
+	PAPA_SCHLUMPF_USB_COMMAND_RESULT_STATUS_T tPacket;
+	unsigned long ulSize;
+	unsigned int uiSizeDw;
+
+
+	ulSize = ptCommand->ulSize;
+	uiSizeDw = ulSize / sizeof(uint32_t);
+
+	/* Is the size a multiple of 4? */
+	if( (ulSize&3U)!=0 )
+	{
+		tPacket.ulStatus = USB_COMMAND_STATUS_InvalidSize;
+	}
+	/* Does the requested size exceed the PCI DMA buffer? */
+	else if( ulSize>(unsigned int)(g_pul_PCI_DMA_Buffer_End - g_pul_PCI_DMA_Buffer_Start) )
+	{
+		tPacket.ulStatus = USB_COMMAND_STATUS_InvalidSize;
+	}
+	else
+	{
+		/* Copy the data from the packet to the DMA buffer. */
+		memcpy(g_pul_PCI_DMA_Buffer_Start, ptCommand->aucData, ulSize);
+
+		iResult = pciDma_MemWrite(ptCommand->ulDeviceAddress, g_pul_PCI_DMA_Buffer_Start, uiSizeDw);
+		if( iResult==0 )
+		{
+			tPacket.ulStatus = USB_COMMAND_STATUS_Ok;
+		}
+		else
+		{
+			tPacket.ulStatus = USB_COMMAND_STATUS_PciTransferFailed;
+		}
+	}
+	usb_send_packet((unsigned char*)(&tPacket), sizeof(tPacket));
+}
+
+
+
 static void execute_command_dma_cfg0_write(PAPA_SCHLUMPF_USB_COMMAND_DMA_CFG0_WRITE_T *ptCommand)
 {
 	int iResult;
@@ -281,13 +322,14 @@ void execute_command(PAPA_SCHLUMPF_USB_COMMAND_T *ptCommand)
 	case PAPA_SCHLUMPF_USB_COMMAND_ResetPCI:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMAIoRead:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMAMemRead:
-	case PAPA_SCHLUMPF_USB_COMMAND_DMAMemReadArea:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMACfg0Read:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMACfg1Read:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMAIoWrite:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMAMemWrite:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMACfg0Write:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMACfg1Write:
+	case PAPA_SCHLUMPF_USB_COMMAND_DMAMemReadArea:
+	case PAPA_SCHLUMPF_USB_COMMAND_DMAMemWriteArea:
 		iResult = 0;
 		break;
 	}
@@ -335,6 +377,10 @@ void execute_command(PAPA_SCHLUMPF_USB_COMMAND_T *ptCommand)
 
 		case PAPA_SCHLUMPF_USB_COMMAND_DMAMemWrite:
 			execute_command_dma_mem_write((PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_WRITE_T*)ptCommand);
+			break;
+
+		case PAPA_SCHLUMPF_USB_COMMAND_DMAMemWriteArea:
+			execute_command_dma_mem_write_area((PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_WRITE_AREA_T*)ptCommand);
 			break;
 
 		case PAPA_SCHLUMPF_USB_COMMAND_DMACfg0Write:

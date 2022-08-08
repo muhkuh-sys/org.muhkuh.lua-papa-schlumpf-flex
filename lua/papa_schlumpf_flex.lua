@@ -323,6 +323,12 @@ end
 
 
 
+function papaSchlumpfFlex:memReadArea(ulAddress, ulSize)
+  return self.tP:memReadArea(ulAddress, ulSize)
+end
+
+
+
 function papaSchlumpfFlex:cfg0Read(ulAddress)
   return self.tP:cfg0Read(ulAddress)
 end
@@ -343,6 +349,12 @@ end
 
 function papaSchlumpfFlex:memWrite(ulAddress, ulData)
   return self.tP:memWrite(ulAddress, ulData)
+end
+
+
+
+function papaSchlumpfFlex:memWriteArea(ulAddress, strData)
+  return self.tP:memWriteArea(ulAddress, strData)
 end
 
 
