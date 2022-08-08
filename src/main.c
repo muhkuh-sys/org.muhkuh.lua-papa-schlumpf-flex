@@ -92,25 +92,6 @@ void test_main(void)
 	/* Activate the USB pull resistor. */
 	ptGpioArea->aulGpio_cfg[12] = 5;
 
-#if 0
-	tResult = test();
-	if( tResult==TEST_RESULT_OK )
-	{
-		/* Fast green blinking   *_G   */
-		rdy_run_blinki_init(&tBlinki, 1, 5);
-		while(1)
-		{
-			rdy_run_blinki(&tBlinki);
-		}
-	}
-	else
-	{
-		rdy_run_setLEDs(RDYRUN_YELLOW);
-	}
-
-	while(1) {};
-#endif
-
 	/* Fast green blinking   *_G   */
 	rdy_run_blinki_init(&tBlinki, 1, 5);
 	while(1)
