@@ -64,6 +64,12 @@ sources = """
     src/usb_emsys/usb_command_execution.c
 """
 
+sources_communication = """
+    src_communication/init.S
+    src_communication/mailbox.c
+    src_communication/main.c
+"""
+
 #----------------------------------------------------------------------------
 #
 # Build all files.
@@ -78,3 +84,10 @@ tEnv.Replace(LDFILE = 'src/netx500.ld')
 tSrc = tEnv.SetBuildPath('targets/netx500_intram', 'src', sources)
 tElf = tEnv.Elf('targets/netx500_intram/netx500_intram.elf', tSrc + tEnv['PLATFORM_LIBRARY'])
 tImg = tEnv.BootBlock('targets/papa_schlumpf_flex.img', tElf, BOOTBLOCK_SRC='SPI_GEN_10', BOOTBLOCK_DST='INTRAM')
+
+tEnvCom = atEnv.NETX500.Clone()
+tEnvCom.Append(CPPPATH = astrIncludePaths)
+tEnvCom.Replace(LDFILE = 'src_communication/netx500.ld')
+tSrcCom = tEnvCom.SetBuildPath('targets/netx500_intram_com', 'src_communication', sources_communication)
+tElfCom = tEnvCom.Elf('targets/netx500_intram_com/netx500_intram_com.elf', tSrcCom + tEnvCom['PLATFORM_LIBRARY'])
+tImgCom = tEnvCom.BootBlock('targets/dpm_communication.img', tElfCom, BOOTBLOCK_SRC='MMC', BOOTBLOCK_DST='INTRAM')
