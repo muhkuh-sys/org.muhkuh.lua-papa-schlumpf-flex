@@ -363,7 +363,6 @@ RESULT_INT_NOTHING_OR_NIL_WITH_ERR PapaSchlumpfFlex::memReadArea(uint32_t ulAddr
 				{
 					ulChunk = ulChunkMax;
 				}
-				fprintf(stderr, "%s: request %d bytes.\n", m_pcPluginId, ulChunk);
 
 				tCommand.ulCommand = PAPA_SCHLUMPF_USB_COMMAND_DMAMemReadArea;
 				tCommand.ulDeviceAddress = ulAddress + ulOffset;
@@ -377,7 +376,6 @@ RESULT_INT_NOTHING_OR_NIL_WITH_ERR PapaSchlumpfFlex::memReadArea(uint32_t ulAddr
 				else
 				{
 					iResult = __receivePacket(tBigger.auc, sizeof(tBigger), &iTransfered, 500);
-					fprintf(stderr, "%s: received %d bytes\n", m_pcPluginId, iTransfered);
 					if( iResult!=0 )
 					{
 						fprintf(stderr, "%s: failed to receive packet: %d\n", m_pcPluginId, iResult);
@@ -680,7 +678,6 @@ RESULT_INT_TRUE_OR_NIL_WITH_ERR PapaSchlumpfFlex::memWriteArea(uint32_t ulAddres
 			{
 				ulChunk = ulChunkMax;
 			}
-			fprintf(stderr, "%s: write %d bytes.\n", m_pcPluginId, ulChunk);
 
 			tCommand.ulCommand = PAPA_SCHLUMPF_USB_COMMAND_DMAMemWriteArea;
 			tCommand.ulDeviceAddress = ulAddress + ulOffset;
@@ -708,7 +705,6 @@ RESULT_INT_TRUE_OR_NIL_WITH_ERR PapaSchlumpfFlex::memWriteArea(uint32_t ulAddres
 				if( tResult==PAPA_SCHLUMPF_RESULT_Ok )
 				{
 					iResult = __receivePacket((unsigned char*)&tResponse, sizeof(tResponse), &iTransfered, 500);
-					fprintf(stderr, "%s: received %d bytes\n", m_pcPluginId, iTransfered);
 					if( iResult!=0 )
 					{
 						fprintf(stderr, "%s: failed to receive packet: %d\n", m_pcPluginId, iResult);
