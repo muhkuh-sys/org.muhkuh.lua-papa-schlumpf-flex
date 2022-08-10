@@ -318,61 +318,96 @@ end
 
 
 function papaSchlumpfFlex:ioRead(ulAddress)
-  return self.tP:ioRead(ulAddress)
+  local tData, strError = self.tP:ioRead(ulAddress)
+  if tData==nil then
+    error(string.format('ioRead(0x%08x) failed: %s', ulAddress, strError))
+  end
+  return tData
 end
 
 
 
 function papaSchlumpfFlex:memRead(ulAddress)
-  return self.tP:memRead(ulAddress)
+  local tData, strError = self.tP:memRead(ulAddress)
+  if tData==nil then
+    error(string.format('memRead(0x%08x) failed: %s', ulAddress, strError))
+  end
+  return tData
 end
 
 
 
 function papaSchlumpfFlex:memReadArea(ulAddress, ulSize)
-  return self.tP:memReadArea(ulAddress, ulSize)
+  local tData, strError = self.tP:memReadArea(ulAddress, ulSize)
+  if tData==nil then
+    error(string.format('memReadArea(0x%08x, %d) failed: %s', ulAddress, ulSize, strError))
+  end
+  return tData
 end
 
 
 
 function papaSchlumpfFlex:cfg0Read(ulAddress)
-  return self.tP:cfg0Read(ulAddress)
+  local tData, strError = self.tP:cfg0Read(ulAddress)
+  if tData==nil then
+    error(string.format('cfg0Read(0x%08x) failed: %s', ulAddress, strError))
+  end
+  return tData
 end
 
 
 
 function papaSchlumpfFlex:cfg1Read(ulAddress)
-  return self.tP:cfg1Read(ulAddress)
+  local tData, strError = self.tP:cfg1Read(ulAddress)
+  if tData==nil then
+    error(string.format('cfg1Read(0x%08x) failed: %s', ulAddress, strError))
+  end
+  return tData
 end
 
 
 
 function papaSchlumpfFlex:ioWrite(ulAddress, ulData)
-  return self.tP:ioWrite(ulAddress, ulData)
+  local tResult, strError = self.tP:ioWrite(ulAddress, ulData)
+  if tResult~=true then
+    error(string.format('ioWrite(0x%08x, 0x08x) failed: %s', ulAddress, ulData, strError))
+  end
 end
 
 
 
 function papaSchlumpfFlex:memWrite(ulAddress, ulData)
-  return self.tP:memWrite(ulAddress, ulData)
+  local tResult, strError = self.tP:memWrite(ulAddress, ulData)
+  if tResult~=true then
+    error(string.format('memWrite(0x%08x, 0x08x) failed: %s', ulAddress, ulData, strError))
+  end
 end
 
 
 
 function papaSchlumpfFlex:memWriteArea(ulAddress, strData)
-  return self.tP:memWriteArea(ulAddress, strData)
+  local tResult, strError = self.tP:memWriteArea(ulAddress, strData)
+  if tResult~=true then
+    error(string.format('memWriteArea(0x%08x, ...) failed: %s', ulAddress, strError))
+  end
 end
 
 
 
 function papaSchlumpfFlex:cfg0Write(ulAddress, ulData)
-  return self.tP:cfg0Write(ulAddress, ulData)
+  local tResult, strError = self.tP:cfg0Write(ulAddress, ulData)
+  if tResult~=true then
+    error(string.format('cfg0Write(0x%08x, 0x08x) failed: %s', ulAddress, ulData, strError))
+  end
 end
 
 
 
 function papaSchlumpfFlex:cfg1Write(ulAddress, ulData)
-  return self.tP:cfg1Write(ulAddress, ulData)
+  local tResult, strError = self.tP:cfg1Write(ulAddress, ulData)
+  if tResult~=true then
+    error(string.format('cfg1Write(0x%08x, 0x08x) failed: %s', ulAddress, ulData, strError))
+  end
 end
 
 
