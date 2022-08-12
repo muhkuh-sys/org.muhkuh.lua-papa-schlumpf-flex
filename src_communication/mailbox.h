@@ -12,10 +12,10 @@ typedef enum MAILBOX_ERROR_ENUM
 
 void mailbox_init(void);
 
-void *mailbox_receive_poll(unsigned long *pulSize);
+void *mailbox_receive_poll(unsigned int *puiSize);
 void mailbox_receive_ack(void);
 
-MAILBOX_ERROR_T mailbox_send_data(void *pvData, unsigned long ulSize);
+MAILBOX_ERROR_T mailbox_send_data(void *pvData, unsigned int uiSize);
 void mailbox_send_wait_for_ack(void);
 
 

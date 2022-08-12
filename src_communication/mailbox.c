@@ -94,25 +94,25 @@ void mailbox_init(void)
 }
 
 
-void *mailbox_receive_poll(unsigned long *pulSize)
+void *mailbox_receive_poll(unsigned int *puiSize)
 {
 	MAILBOX_STATE_T tState;
 	void *pvData;
-	unsigned long ulSize;
+	unsigned int uiSize;
 
 
 	pvData = NULL;
-	ulSize = 0;
+	uiSize = 0;
 	tState = mailbox_get_state(&(tDpm.tControlRx));
 	if( tState==MAILBOX_STATE_Full )
 	{
 		pvData = tDpm.aucMailboxRx;
-		ulSize = tDpm.tControlRx.ulDataSize;
+		uiSize = tDpm.tControlRx.ulDataSize;
 	}
 
-	if( pulSize!=NULL )
+	if( puiSize!=NULL )
 	{
-		*pulSize = ulSize;
+		*puiSize = uiSize;
 	}
 	return pvData;
 }
@@ -125,14 +125,14 @@ void mailbox_receive_ack(void)
 }
 
 
-MAILBOX_ERROR_T mailbox_send_data(void *pvData, unsigned long ulSize)
+MAILBOX_ERROR_T mailbox_send_data(void *pvData, unsigned int uiSize)
 {
 	MAILBOX_ERROR_T tResult;
 	MAILBOX_STATE_T tState;
 
 
 	/* Does the data fit into the buffer? */
-	if( ulSize>sizeof(tDpm.aucMailboxTx) )
+	if( uiSize>sizeof(tDpm.aucMailboxTx) )
 	{
 		/* The data is too big for the mailbox! */
 		tResult = MAILBOX_ERROR_TxDataTooBig;
@@ -148,9 +148,9 @@ MAILBOX_ERROR_T mailbox_send_data(void *pvData, unsigned long ulSize)
 		else
 		{
 			/* Copy the data into the mailbox. */
-			memcpy(tDpm.aucMailboxTx, pvData, ulSize);
+			memcpy(tDpm.aucMailboxTx, pvData, uiSize);
 			/* Set the size of the data. */
-			tDpm.tControlTx.ulDataSize = ulSize;
+			tDpm.tControlTx.ulDataSize = uiSize;
 			/* Set the mailbox state to "full". */
 			tDpm.tControlTx.ulReqCnt += 1U;
 
