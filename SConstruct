@@ -68,6 +68,8 @@ sources_communication = """
     src_communication/init.S
     src_communication/mailbox.c
     src_communication/main.c
+    src_communication/monitor.c
+    src_communication/ringbuffer.c
 """
 
 #----------------------------------------------------------------------------

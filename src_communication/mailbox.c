@@ -2,6 +2,8 @@
 #include <string.h>
 
 #include "mailbox.h"
+#include "monitor_commands.h"
+#include "romloader_def.h"
 
 
 typedef enum MAILBOX_STATE_ENUM
@@ -22,7 +24,8 @@ typedef struct MAILBOX_INFORMATION_STRUCT
 	unsigned long ulBufferTxOffset;
 	unsigned long ulBufferRxSize;
 	unsigned long ulBufferTxSize;
-	unsigned long aulReserved[5];
+	unsigned long ulChipTyp;
+	unsigned long aulReserved[4];
 } MAILBOX_INFORMATION_T;
 
 
@@ -43,8 +46,8 @@ typedef struct MAILBOX_STRUCT
 	MAILBOX_CONTROL_T tControlRx;
 	MAILBOX_CONTROL_T tControlTx;
 	unsigned char aucReserved[0xa0];
-	unsigned char aucMailboxRx[2048];
-	unsigned char aucMailboxTx[2048];
+	unsigned char aucMailboxRx[MONITOR_MAXIMUM_PACKET_SIZE];
+	unsigned char aucMailboxTx[MONITOR_MAXIMUM_PACKET_SIZE];
 } MAILBOX_T;
 
 static MAILBOX_T tDpm __attribute__ ((section (".dpm")));
@@ -88,6 +91,8 @@ void mailbox_init(void)
 	tDpm.tInformation.ulBufferTxOffset = offsetof(MAILBOX_T, aucMailboxTx);
 	tDpm.tInformation.ulBufferRxSize = sizeof(tDpm.aucMailboxRx);
 	tDpm.tInformation.ulBufferTxSize = sizeof(tDpm.aucMailboxTx);
+	/* FIXME: detect this. */
+	tDpm.tInformation.ulChipTyp = ROMLOADER_CHIPTYP_NETX500;
 
 	mailbox_control_init(&(tDpm.tControlRx));
 	mailbox_control_init(&(tDpm.tControlTx));
