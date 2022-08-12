@@ -100,43 +100,49 @@ static void execute_command_dma_mem_read_area(PAPA_SCHLUMPF_USB_COMMAND_DMA_MEM_
 {
 	int iResult;
 	unsigned long ulSize;
-	unsigned long ulSizeRoundedUp;
 	unsigned int uiSizeDw;
 	size_t sizUsbPacket;
 
 	/* Round the size of the read request up to the next DWORD and convert the byte size to a DWORD size. */
 	ulSize = ptCommand->ulSize;
-	ulSizeRoundedUp = (ulSize + 3U) & 0xfffffffcU;
-	uiSizeDw = ulSizeRoundedUp / sizeof(uint32_t);
-
-	/* Does the requested size exceed the PCI DMA buffer? */
-	if( ulSizeRoundedUp>(unsigned int)(g_pul_PCI_DMA_Buffer_End - g_pul_PCI_DMA_Buffer_Start) )
-	{
-		tReadAreaResponse.ulStatus = USB_COMMAND_STATUS_InvalidSize;
-		sizUsbPacket = sizeof(uint32_t);
-	}
-	/* Does the request exceed the USB buffer? */
-	else if( ulSize>sizeof(tReadAreaResponse.aucData) )
+	if( (ulSize&3U)!=0 )
 	{
 		tReadAreaResponse.ulStatus = USB_COMMAND_STATUS_InvalidSize;
 		sizUsbPacket = sizeof(uint32_t);
 	}
 	else
 	{
-		iResult = pciDma_MemRead(ptCommand->ulDeviceAddress, g_pul_PCI_DMA_Buffer_Start, uiSizeDw);
-		if( iResult==0 )
+		uiSizeDw = ulSize / sizeof(uint32_t);
+
+		/* Does the requested size exceed the PCI DMA buffer? */
+		if( ulSize>(unsigned int)(g_pul_PCI_DMA_Buffer_End - g_pul_PCI_DMA_Buffer_Start) )
 		{
-			tReadAreaResponse.ulStatus = USB_COMMAND_STATUS_Ok;
-			memcpy(tReadAreaResponse.aucData, g_pul_PCI_DMA_Buffer_Start, ulSize);
-			sizUsbPacket = sizeof(uint32_t) + ulSize;
+			tReadAreaResponse.ulStatus = USB_COMMAND_STATUS_InvalidSize;
+			sizUsbPacket = sizeof(uint32_t);
+		}
+		/* Does the request exceed the USB buffer? */
+		else if( ulSize>sizeof(tReadAreaResponse.aucData) )
+		{
+			tReadAreaResponse.ulStatus = USB_COMMAND_STATUS_InvalidSize;
+			sizUsbPacket = sizeof(uint32_t);
 		}
 		else
 		{
-			tReadAreaResponse.ulStatus = USB_COMMAND_STATUS_PciTransferFailed;
-			sizUsbPacket = sizeof(uint32_t);
+			iResult = pciDma_MemRead(ptCommand->ulDeviceAddress, g_pul_PCI_DMA_Buffer_Start, uiSizeDw);
+			if( iResult==0 )
+			{
+				tReadAreaResponse.ulStatus = USB_COMMAND_STATUS_Ok;
+				memcpy(tReadAreaResponse.aucData, g_pul_PCI_DMA_Buffer_Start, ulSize);
+				sizUsbPacket = sizeof(uint32_t) + ulSize;
+			}
+			else
+			{
+				tReadAreaResponse.ulStatus = USB_COMMAND_STATUS_PciTransferFailed;
+				sizUsbPacket = sizeof(uint32_t);
+			}
 		}
+		usb_send_packet((unsigned char*)(&tReadAreaResponse), sizUsbPacket);
 	}
-	usb_send_packet((unsigned char*)(&tReadAreaResponse), sizUsbPacket);
 }
 
 
