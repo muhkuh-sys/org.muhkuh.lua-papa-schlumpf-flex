@@ -123,6 +123,7 @@ function Plugin:_init(strPluginName, strPluginTyp, tLogWriter, strLogLevel, tPap
   self.ulBufferRxSize = nil
   self.ulBufferTxSize = nil
   self.ulChipTyp = nil
+  self.fIsConnected = false
 
   self.strPacketStart = string.char(0x2a)
 end
@@ -145,6 +146,23 @@ end
 
 function Plugin:GetChiptyp()
   return self.ulChipTyp
+end
+
+
+function Plugin:IsConnected()
+  return self.fIsConnected
+end
+
+
+function Plugin:Disconnect()
+  local tLog = self.tLog
+
+  if self.fIsConnected~=true then
+    tLog.debug('Ignoring disconnect request. Already disconnected.')
+  else
+    tLog.debug('Disconnecting...')
+    self.fIsConnected = false
+  end
 end
 
 
@@ -186,6 +204,9 @@ function Plugin:detect()
         self.ulBufferTxSize = tInfoBlock.ulBufferTxSize
         -- Set the chip type.
         self.ulChipTyp = ulChipTyp
+
+        -- FIXME: this should go to a "connect" method.
+        self.fIsConnected = true
 
         tResult = true
       end
@@ -374,6 +395,11 @@ function Plugin:read_data08(ulAddress)
   local tLog = self.tLog
   local ucData
 
+  -- Is the plugin connected?
+  if self.fIsConnected~=true then
+    error('Not connected.')
+  end
+
   -- This is a read08 command at address 0. It should return 0x01 on a netX500.
   local strData = self.tStructurePacketReadWrite:write{
     ucType = self.MONITOR_PACKET_TYP.Command_Read08,
@@ -404,6 +430,11 @@ end
 function Plugin:read_data16(ulAddress)
   local tLog = self.tLog
   local usData
+
+  -- Is the plugin connected?
+  if self.fIsConnected~=true then
+    error('Not connected.')
+  end
 
   -- This is a read16 command at address 0. It should return 0x0001 on a netX500.
   local strData = self.tStructurePacketReadWrite:write{
@@ -436,6 +467,11 @@ end
 function Plugin:read_data32(ulAddress)
   local tLog = self.tLog
   local ulData
+
+  -- Is the plugin connected?
+  if self.fIsConnected~=true then
+    error('Not connected.')
+  end
 
   -- This is a read32 command at address 0. It should return 0xea080001 on a netX500.
   local strData = self.tStructurePacketReadWrite:write{
@@ -470,6 +506,11 @@ end
 function Plugin:read_data64(ulAddress)
   local tLog = self.tLog
   local ullData
+
+  -- Is the plugin connected?
+  if self.fIsConnected~=true then
+    error('Not connected.')
+  end
 
   local strData = self.tStructurePacketReadWrite:write{
     ucType = self.MONITOR_PACKET_TYP.Command_Read64,
@@ -507,6 +548,11 @@ end
 function Plugin:read_image(ulAddress, ulSize, fnCallback, pvCallback)
   local tLog = self.tLog
   local tData = {}
+
+  -- Is the plugin connected?
+  if self.fIsConnected~=true then
+    error('Not connected.')
+  end
 
   -- Get the maximum number of bytes in a "read_data" packet.
   local sizMaxChunk = self.ulBufferTxSize - 6
@@ -561,6 +607,11 @@ end
 function Plugin:write_data08(ulAddress, ucData)
   local tLog = self.tLog
 
+  -- Is the plugin connected?
+  if self.fIsConnected~=true then
+    error('Not connected.')
+  end
+
   local strData = self.tStructurePacketReadWrite:write{
     ucType = self.MONITOR_PACKET_TYP.Command_Write08,
     ulAddress = ulAddress
@@ -590,6 +641,11 @@ end
 function Plugin:write_data16(ulAddress, usData)
   local bit = require 'bit'
   local tLog = self.tLog
+
+  -- Is the plugin connected?
+  if self.fIsConnected~=true then
+    error('Not connected.')
+  end
 
   local strData = self.tStructurePacketReadWrite:write{
     ucType = self.MONITOR_PACKET_TYP.Command_Write16,
@@ -623,6 +679,11 @@ end
 function Plugin:write_data32(ulAddress, ulData)
   local bit = require 'bit'
   local tLog = self.tLog
+
+  -- Is the plugin connected?
+  if self.fIsConnected~=true then
+    error('Not connected.')
+  end
 
   local strData = self.tStructurePacketReadWrite:write{
     ucType = self.MONITOR_PACKET_TYP.Command_Write32,
@@ -658,6 +719,11 @@ end
 function Plugin:write_data64(ulAddress, ullData)
   local bit = require 'bit'
   local tLog = self.tLog
+
+  -- Is the plugin connected?
+  if self.fIsConnected~=true then
+    error('Not connected.')
+  end
 
   local strData = self.tStructurePacketReadWrite:write{
     ucType = self.MONITOR_PACKET_TYP.Command_Write64,
@@ -696,6 +762,11 @@ end
 
 function Plugin:write_image(ulAddress, strData, fnCallback, pvCallback)
   local tLog = self.tLog
+
+  -- Is the plugin connected?
+  if self.fIsConnected~=true then
+    error('Not connected.')
+  end
 
   -- Get the maximum number of bytes in a "write_area" packet.
   -- This is the maximum packet size minus...
