@@ -383,14 +383,15 @@ function Plugin:read_data08(ulAddress)
 
   local strResponse = self:receivePacket()
   if strResponse==nil then
-    tLog.error('Error')
+    error('Error')
   else
 --    tLog.info('Got response:')
 --    _G.tester:hexdump(strResponse)
     local ucType = string.byte(strResponse, 1)
     -- Is this a "read_data" packet?
     if ucType~=self.MONITOR_PACKET_TYP.Read_Data then
-      tLog.error('Unexpected packet type: 0x%02x', ucType)
+      _G.tester:hexdump(strResponse)
+      error(string.format('Unexpected packet type: 0x%02x', ucType))
     else
       ucData = string.byte(strResponse, 2)
     end
@@ -413,14 +414,15 @@ function Plugin:read_data16(ulAddress)
 
   local strResponse = self:receivePacket()
   if strResponse==nil then
-    tLog.error('Error')
+    error('Error')
   else
 --    tLog.info('Got response:')
 --    _G.tester:hexdump(strResponse)
     local ucType = string.byte(strResponse, 1)
     -- Is this a "read_data" packet?
     if ucType~=self.MONITOR_PACKET_TYP.Read_Data then
-      tLog.error('Unexpected packet type: 0x%02x', ucType)
+      _G.tester:hexdump(strResponse)
+      error(string.format('Unexpected packet type: 0x%02x', ucType))
     else
       usData =              string.byte(strResponse, 2) +
                0x00000100 * string.byte(strResponse, 3)
@@ -444,14 +446,15 @@ function Plugin:read_data32(ulAddress)
 
   local strResponse = self:receivePacket()
   if strResponse==nil then
-    tLog.error('Error')
+    error('Error')
   else
 --    tLog.info('Got response:')
 --    _G.tester:hexdump(strResponse)
     local ucType = string.byte(strResponse, 1)
     -- Is this a "read_data" packet?
     if ucType~=self.MONITOR_PACKET_TYP.Read_Data then
-      tLog.error('Unexpected packet type: 0x%02x', ucType)
+      _G.tester:hexdump(strResponse)
+      error(string.format('Unexpected packet type: 0x%02x', ucType))
     else
       ulData =              string.byte(strResponse, 2) +
                0x00000100 * string.byte(strResponse, 3) +
@@ -476,14 +479,15 @@ function Plugin:read_data64(ulAddress)
 
   local strResponse = self:receivePacket()
   if strResponse==nil then
-    tLog.error('Error')
+    error('Error')
   else
 --    tLog.info('Got response:')
 --    _G.tester:hexdump(strResponse)
     local ucType = string.byte(strResponse, 1)
     -- Is this a "read_data" packet?
     if ucType~=self.MONITOR_PACKET_TYP.Read_Data then
-      tLog.error('Unexpected packet type: 0x%02x', ucType)
+      _G.tester:hexdump(strResponse)
+      error(string.format('Unexpected packet type: 0x%02x', ucType))
     else
       ulData =                      string.byte(strResponse, 2) +
                0x0000000000000100 * string.byte(strResponse, 3) +
