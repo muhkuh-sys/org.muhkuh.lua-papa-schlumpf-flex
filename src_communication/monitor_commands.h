@@ -21,7 +21,7 @@ typedef enum MONITOR_PACKET_TYP
 	MONITOR_PACKET_TYP_Command_Write32       = 0x07,
 	MONITOR_PACKET_TYP_Command_Write64       = 0x08,
 	MONITOR_PACKET_TYP_Command_WriteArea     = 0x09,
-	MONITOR_PACKET_TYP_Command_Execute       = 0x0a,
+	MONITOR_PACKET_TYP_Command_Call          = 0x0a,
 	MONITOR_PACKET_TYP_ACK                   = 0x0b,
 	MONITOR_PACKET_TYP_Status                = 0x0c,
 	MONITOR_PACKET_TYP_Read_Data             = 0x0d,

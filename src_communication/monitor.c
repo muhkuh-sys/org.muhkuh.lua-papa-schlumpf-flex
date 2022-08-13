@@ -4,6 +4,7 @@
 #include "monitor.h"
 #include "monitor_commands.h"
 #include "ringbuffer.h"
+#include "serial_vectors.h"
 
 
 typedef enum MONITOR_PACKET_STATE_ENUM
@@ -20,7 +21,7 @@ typedef enum MONITOR_COMMUNICATION_STATE_ENUM
 //	MONITOR_COMMUNICATION_STATE_Disconnected                  = 0,
 	MONITOR_COMMUNICATION_STATE_Connected                     = 0,
 	MONITOR_COMMUNICATION_STATE_CommandResponseWaitForAck     = 1,
-//	MONITOR_COMMUNICATION_STATE_InCall                        = 2,
+	MONITOR_COMMUNICATION_STATE_InCall                        = 2,
 //	MONITOR_COMMUNICATION_STATE_CallDataWaitForAck            = 3
 } MONITOR_COMMUNICATION_STATE_T;
 
@@ -46,7 +47,12 @@ typedef struct MONITOR_HANDLE_STRUCT
 	MONITOR_COMMUNICATION_STATE_T tCommunicationState;
 
 	unsigned int sizTxBuffer;
+	unsigned int sizCallTxData;
+
 	unsigned char aucTxBuffer[MONITOR_MAXIMUM_PACKET_SIZE];
+
+	/* The "call tx" buffer holds the pure message data. */
+	unsigned char aucCallTxBuffer[320U];
 } MONITOR_HANDLE_T;
 
 
@@ -67,6 +73,17 @@ typedef union VAL_UNION
 	uint32_t ul;
 	uint64_t ull;
 } VAL_T;
+
+
+typedef void (*PFN_MONITOR_CALL_T)(unsigned long ulR0);
+
+
+typedef union PFN_UNION
+{
+	unsigned long ul;
+	PFN_MONITOR_CALL_T pfn;
+} PFN_T;
+
 
 
 static MONITOR_HANDLE_T tMonitorHandle;
@@ -187,6 +204,89 @@ static void send_status(MONITOR_STATUS_T tStatus)
 	/* Send the packet. */
 	tMonitorHandle.pfnTransportSendPacket(tMonitorHandle.pvTransportUserData, pucPacket, 7U);
 }
+
+
+
+static void papa_schlumpf_vector_flush(void)
+{
+	unsigned int sizCallTxData;
+	unsigned int uiDataSize;
+	unsigned int uiOutputSize;
+	unsigned char *pucOutput;
+	unsigned short usCrc;
+
+
+	sizCallTxData = tMonitorHandle.sizCallTxData;
+	if( sizCallTxData!=0 )
+	{
+		/* Get the data size of the packet.
+		 * This includes the type and the message data.
+		 */
+		uiDataSize = 1U + sizCallTxData;
+		uiOutputSize = 1U + 2U + uiDataSize + 2U;
+
+		/* Create a new packet. */
+		pucOutput = tMonitorHandle.aucTxBuffer;
+
+		*(pucOutput++) = MONITOR_PACKET_START;
+		*(pucOutput++) = (unsigned char)( uiDataSize      & 0xffU);
+		*(pucOutput++) = (unsigned char)((uiDataSize>>8U) & 0xffU);
+		*(pucOutput++) = MONITOR_PACKET_TYP_Call_Data;
+
+		/* Copy the message data to the buffer. */
+		memcpy(pucOutput, tMonitorHandle.aucCallTxBuffer, sizCallTxData);
+		pucOutput += sizCallTxData;
+
+		/* Build the CRC. */
+		usCrc = crc16_area(tMonitorHandle.aucTxBuffer+1, 2U+uiDataSize);
+		*(pucOutput++) = (unsigned char)( usCrc         & 0xff);
+		*(pucOutput++) = (unsigned char)((usCrc >>  8U) & 0xff);
+
+		/* Set the packet size. */
+		tMonitorHandle.sizTxBuffer = uiOutputSize;
+		tMonitorHandle.pfnTransportSendPacket(tMonitorHandle.pvTransportUserData, tMonitorHandle.aucTxBuffer, uiOutputSize);
+
+		tMonitorHandle.sizCallTxData = 0;
+	}
+}
+
+
+
+static void papa_schlumpf_vector_put(unsigned int uiChar)
+{
+	unsigned int sizCallTxData;
+
+
+	/* Does the TX buffer have space left? */
+	sizCallTxData = tMonitorHandle.sizCallTxData;
+	if( sizCallTxData<sizeof(tMonitorHandle.aucCallTxBuffer) )
+	{
+		/* Append the char to the buffer. */
+		tMonitorHandle.aucCallTxBuffer[sizCallTxData] = (unsigned char)(uiChar & 0xffU);
+		tMonitorHandle.sizCallTxData = ++sizCallTxData;
+
+		/* Send the data if the buffer is full. */
+		if( sizCallTxData>=sizeof(tMonitorHandle.aucCallTxBuffer) )
+		{
+			papa_schlumpf_vector_flush();
+		}
+	}
+}
+
+
+
+static unsigned char papa_schlumpf_vector_get(void)
+{
+	return 0;
+}
+
+
+
+static unsigned int papa_schlumpf_vector_peek(void)
+{
+	return 0;
+}
+
 
 
 static void command_read(unsigned int uiPacketSize, MONITOR_ACCESSSIZE_T tAccessSize)
@@ -508,6 +608,57 @@ static void command_write_area(unsigned int uiPacketSize)
 
 
 
+static void command_call(unsigned int uiPacketSize)
+{
+	RINGBUFFER_T *ptRingBufferRx;
+	PFN_T tPfn;
+	unsigned long ulR0;
+
+
+	ptRingBufferRx = &(tRingbufferRx.tRingBuffer);
+
+	/* The "call" command needs...
+	 *   4 bytes address
+	 *   4 bytes parameter for R0
+	 * This makes a total of 8 bytes.
+	 */
+	if( uiPacketSize!=8U )
+	{
+		/* Skip the complete packet and the CRC. */
+		ringbuffer_skip(ptRingBufferRx, uiPacketSize+2U);
+
+		/* Respond with an error. */
+		send_status(MONITOR_STATUS_InvalidPacketSize);
+	}
+	else
+	{
+		tPfn.ul = get_data32(ptRingBufferRx);
+		ulR0 = get_data32(ptRingBufferRx);
+		/* Skip the CRC. */
+		ringbuffer_skip(ptRingBufferRx, 2U);
+
+		/* The call starts. */
+		tMonitorHandle.tCommunicationState = MONITOR_COMMUNICATION_STATE_InCall;
+
+		send_status(MONITOR_STATUS_Ok);
+
+		/* Initialize the message buffer. */
+		tMonitorHandle.sizCallTxData = 0U;
+
+		/* Call the routine. */
+		tPfn.pfn(ulR0);
+
+		/* Flush any remaining bytes in the FIFO. */
+		papa_schlumpf_vector_flush();
+
+		/* The call finished, notify the PC. */
+		send_status(MONITOR_STATUS_Call_Finished);
+		tMonitorHandle.tCommunicationState = MONITOR_COMMUNICATION_STATE_Connected;
+	}
+}
+
+
+
 static int monitor_process_packet(void)
 {
 	int iDone;
@@ -546,7 +697,7 @@ static int monitor_process_packet(void)
 		case MONITOR_PACKET_TYP_Command_Write32:
 		case MONITOR_PACKET_TYP_Command_Write64:
 		case MONITOR_PACKET_TYP_Command_WriteArea:
-		case MONITOR_PACKET_TYP_Command_Execute:
+		case MONITOR_PACKET_TYP_Command_Call:
 		case MONITOR_PACKET_TYP_ACK:
 		case MONITOR_PACKET_TYP_Status:
 		case MONITOR_PACKET_TYP_Read_Data:
@@ -630,8 +781,9 @@ static int monitor_process_packet(void)
 				iDone = 1;
 				break;
 
-			case MONITOR_PACKET_TYP_Command_Execute:
-				// Not yet...
+			case MONITOR_PACKET_TYP_Command_Call:
+				command_call(uiPacketSize);
+				iDone = 1;
 				break;
 
 			case MONITOR_PACKET_TYP_ACK:
@@ -656,7 +808,7 @@ static int monitor_process_packet(void)
 			break;
 
 		case MONITOR_COMMUNICATION_STATE_CommandResponseWaitForAck:
-			/* A command was executed and a response was sent to the host.
+			/* A "read" or "write" command was executed and a response was sent to the host.
 			 * Now the host must respond with an ACK.
 			 */
 			switch(tPacketTyp)
@@ -671,7 +823,7 @@ static int monitor_process_packet(void)
 			case MONITOR_PACKET_TYP_Command_Write32:
 			case MONITOR_PACKET_TYP_Command_Write64:
 			case MONITOR_PACKET_TYP_Command_WriteArea:
-			case MONITOR_PACKET_TYP_Command_Execute:
+			case MONITOR_PACKET_TYP_Command_Call:
 				/* No new commands are accepted until the last command is acknowledged. */
 				send_status(MONITOR_STATUS_CommandInProgress);
 
@@ -700,13 +852,77 @@ static int monitor_process_packet(void)
 			}
 			break;
 
-//		case MONITOR_COMMUNICATION_STATE_InCall:
+		case MONITOR_COMMUNICATION_STATE_InCall:
+			/* A "call" command was executed and a response was sent to the host.
+			 * Now the host must respond with an ACK.
+			 */
+			switch(tPacketTyp)
+			{
+			case MONITOR_PACKET_TYP_Command_Read08:
+			case MONITOR_PACKET_TYP_Command_Read16:
+			case MONITOR_PACKET_TYP_Command_Read32:
+			case MONITOR_PACKET_TYP_Command_Read64:
+			case MONITOR_PACKET_TYP_Command_ReadArea:
+			case MONITOR_PACKET_TYP_Command_Write08:
+			case MONITOR_PACKET_TYP_Command_Write16:
+			case MONITOR_PACKET_TYP_Command_Write32:
+			case MONITOR_PACKET_TYP_Command_Write64:
+			case MONITOR_PACKET_TYP_Command_WriteArea:
+			case MONITOR_PACKET_TYP_Command_Call:
+				/* No new commands are accepted until the last command is acknowledged. */
+				send_status(MONITOR_STATUS_CommandInProgress);
+
+				/* Finished processing the packet. */
+				iDone = 1;
+				break;
+
+			case MONITOR_PACKET_TYP_ACK:
+				/* Silently ignore spurious ACKs. */
+
+				/* Finished processing the packet. */
+				iDone = 1;
+				break;
+
+			case MONITOR_PACKET_TYP_Call_Data:
+				/* TODO: add this to the input queue. */
+
+				/* Finished processing the packet. */
+				iDone = 1;
+				break;
+
+			case MONITOR_PACKET_TYP_Status:
+			case MONITOR_PACKET_TYP_Read_Data:
+			case MONITOR_PACKET_TYP_Call_Cancel:
+			case MONITOR_PACKET_TYP_MagicData:
+			case MONITOR_PACKET_TYP_Command_Magic:
+				send_status(MONITOR_STATUS_InvalidCommand);
+
+				/* Finished processing the packet. */
+				iDone = 1;
+				break;
+			}
+			break;
+
 //		case MONITOR_COMMUNICATION_STATE_CallDataWaitForAck:
 		}
 	}
 
 	return iDone;
 }
+
+
+
+static const SERIAL_COMM_UI_FN_T tPapaSchlumpfPluginSerialVectors =
+{
+	.fn =
+	{
+		.fnGet = papa_schlumpf_vector_get,
+		.fnPut = papa_schlumpf_vector_put,
+		.fnPeek = papa_schlumpf_vector_peek,
+		.fnFlush = papa_schlumpf_vector_flush
+	}
+};
+
 
 
 void monitor_init(PFN_TRANSPORT_RECEIVE pfnTransportReceive, PFN_TRANSPORT_SEND_PACKET pfnTransportSendPacket, void *pvTransportUserData)
@@ -725,6 +941,10 @@ void monitor_init(PFN_TRANSPORT_RECEIVE pfnTransportReceive, PFN_TRANSPORT_SEND_
 	tMonitorHandle.tCommunicationState = MONITOR_COMMUNICATION_STATE_Connected;
 
 	tMonitorHandle.sizTxBuffer = 0U;
+	tMonitorHandle.sizCallTxData = 0U;
+
+	/* Initialize the serial vectors. */
+	memcpy(&tSerialVectors, &tPapaSchlumpfPluginSerialVectors, sizeof(SERIAL_COMM_UI_FN_T));
 }
 
 
