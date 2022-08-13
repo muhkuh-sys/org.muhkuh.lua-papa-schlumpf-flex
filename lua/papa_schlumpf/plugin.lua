@@ -59,6 +59,13 @@ function Plugin:_init(strPluginName, strPluginTyp, tLogWriter, strLogLevel, tPap
   ]])
   self.sizPacketReadArea = 7
 
+  self.tStructurePacketCall = vstruct.compile([[
+    ucType:u1
+    ulAddress:u4
+    ulR0:u4
+  ]])
+  self.sizPacketCall = 9
+
   self.MONITOR_PACKET_TYP = {
     Command_Read08        = 0x00,
     Command_Read16        = 0x01,
@@ -70,7 +77,7 @@ function Plugin:_init(strPluginName, strPluginTyp, tLogWriter, strLogLevel, tPap
     Command_Write32       = 0x07,
     Command_Write64       = 0x08,
     Command_WriteArea     = 0x09,
-    Command_Execute       = 0x0a,
+    Command_Call          = 0x0a,
     ACK                   = 0x0b,
     Status                = 0x0c,
     Read_Data             = 0x0d,
@@ -823,6 +830,45 @@ function Plugin:write_image(ulAddress, strData, fnCallback, pvCallback)
       error('User cancel!')
     end
   until ulOffset>=ulSize
+end
+
+
+function Plugin:call(ulAddress, ulParameterR0, fnCallback, pvCallback)
+  local tLog = self.tLog
+
+  -- Is the plugin connected?
+  if self.fIsConnected~=true then
+    error('Not connected.')
+  end
+
+  local strData = self.tStructurePacketCall:write{
+    ucType = self.MONITOR_PACKET_TYP.Command_Call,
+    ulAddress = ulAddress,
+    ulR0 = ulParameterR0
+  }
+  self:sendPacket(strData)
+
+  repeat
+    local fCallFinished = false
+    local strResponse = self:receivePacket()
+    if strResponse==nil then
+      error('Error')
+    else
+      tLog.info('Got response:')
+      _G.tester:hexdump(strResponse)
+      local ucType = string.byte(strResponse, 1)
+      if ucType==self.MONITOR_PACKET_TYP.Status then
+        local ucStatus = string.byte(strResponse, 2)
+        if ucStatus==self.MONITOR_STATUS.Call_Finished then
+          fCallFinished = true
+        end
+      elseif ucType==self.MONITOR_PACKET_TYP.Call_Data then
+        if fnCallback~=nil then
+          fnCallback(string.sub(strResponse, 2), pvCallback)
+        end
+      end
+    end
+  until fCallFinished==true
 end
 
 
