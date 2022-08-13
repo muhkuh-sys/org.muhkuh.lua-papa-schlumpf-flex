@@ -101,15 +101,27 @@ static unsigned short peek_data16(RINGBUFFER_T *ptRingBuffer, unsigned int uiOff
 }
 
 
-static unsigned long peek_data32(RINGBUFFER_T *ptRingBuffer, unsigned int uiOffset)
+static unsigned short get_data16(RINGBUFFER_T *ptRingBuffer)
 {
 	unsigned long ulValue;
 
 
-	ulValue  =  (unsigned long)ringbuffer_peek(ptRingBuffer, uiOffset+0U);
-	ulValue |= ((unsigned long)ringbuffer_peek(ptRingBuffer, uiOffset+1U) << 8U);
-	ulValue |= ((unsigned long)ringbuffer_peek(ptRingBuffer, uiOffset+2U) <<16U);
-	ulValue |= ((unsigned long)ringbuffer_peek(ptRingBuffer, uiOffset+3U) <<24U);
+	ulValue  =  (unsigned long)ringbuffer_get_char(ptRingBuffer);
+	ulValue |= ((unsigned long)ringbuffer_get_char(ptRingBuffer) << 8U);
+
+	return (unsigned short)ulValue;
+}
+
+
+static unsigned long get_data32(RINGBUFFER_T *ptRingBuffer)
+{
+	unsigned long ulValue;
+
+
+	ulValue  =  (unsigned long)ringbuffer_get_char(ptRingBuffer);
+	ulValue |= ((unsigned long)ringbuffer_get_char(ptRingBuffer) << 8U);
+	ulValue |= ((unsigned long)ringbuffer_get_char(ptRingBuffer) <<16U);
+	ulValue |= ((unsigned long)ringbuffer_get_char(ptRingBuffer) <<24U);
 
 	return ulValue;
 }
@@ -191,18 +203,22 @@ static void command_read(unsigned int uiPacketSize, MONITOR_ACCESSSIZE_T tAccess
 	ptRingBufferRx = &(tRingbufferRx.tRingBuffer);
 
 	/* The "read" command needs...
-	 *   a type (1 byte)
 	 *   an address (4 bytes)
-	 * This makes a total of 5 bytes.
+	 * This makes a total of 4 bytes.
 	 */
-	if( uiPacketSize!=5U )
+	if( uiPacketSize!=4U )
 	{
+		/* Skip the complete packet and the CRC. */
+		ringbuffer_skip(ptRingBufferRx, uiPacketSize+2U);
+
 		/* Respond with an error. */
 		send_status(MONITOR_STATUS_InvalidPacketSize);
 	}
 	else
 	{
-		tAddress.ul = peek_data32(ptRingBufferRx, 1);
+		tAddress.ul = get_data32(ptRingBufferRx);
+		/* Skip the CRC. */
+		ringbuffer_skip(ptRingBufferRx, 2U);
 
 		/* Does the number of elements fit into the output buffer?
 		 * The output size includes...
@@ -300,20 +316,24 @@ static void command_read_area(unsigned int uiPacketSize)
 	ptRingBufferRx = &(tRingbufferRx.tRingBuffer);
 
 	/* The "read_area" command needs...
-	 *   a type (1 byte)
 	 *   an address (4 bytes)
 	 *   a size (2 bytes)
-	 * This makes a total of 7 bytes.
+	 * This makes a total of 6 bytes.
 	 */
-	if( uiPacketSize!=7U )
+	if( uiPacketSize!=6U )
 	{
+		/* Skip the complete packet and the CRC. */
+		ringbuffer_skip(ptRingBufferRx, uiPacketSize+2U);
+
 		/* Respond with an error. */
 		send_status(MONITOR_STATUS_InvalidPacketSize);
 	}
 	else
 	{
-		tAddress.ul = peek_data32(ptRingBufferRx, 1U);
-		uiSize = peek_data16(ptRingBufferRx, 5U);
+		tAddress.ul = get_data32(ptRingBufferRx);
+		uiSize = get_data16(ptRingBufferRx);
+		/* Skip the CRC. */
+		ringbuffer_skip(ptRingBufferRx, 2U);
 
 		/* Does the number of elements fit into the output buffer?
 		 * The output size includes...
@@ -368,11 +388,10 @@ static void command_write(unsigned int uiPacketSize, MONITOR_ACCESSSIZE_T tAcces
 	ptRingBufferRx = &(tRingbufferRx.tRingBuffer);
 
 	/* The "write" command needs...
-	 *   a type (1 byte)
 	 *   an address (4 bytes)
 	 *   data
 	 */
-	uiExpectedSize = 1U + 4U;
+	uiExpectedSize = 4U;
 	switch(tAccessSize)
 	{
 	case MONITOR_ACCESSSIZE_08:
@@ -393,45 +412,51 @@ static void command_write(unsigned int uiPacketSize, MONITOR_ACCESSSIZE_T tAcces
 	}
 	if( uiPacketSize!=uiExpectedSize )
 	{
+		/* Skip the complete packet and the CRC. */
+		ringbuffer_skip(ptRingBufferRx, uiPacketSize+2U);
+
 		/* Respond with an error. */
 		send_status(MONITOR_STATUS_InvalidPacketSize);
 	}
 	else
 	{
-		tAddress.ul = peek_data32(ptRingBufferRx, 1U);
+		tAddress.ul = get_data32(ptRingBufferRx);
 
 		switch(tAccessSize)
 		{
 		case MONITOR_ACCESSSIZE_08:
-			*(tAddress.puc) = ringbuffer_peek(ptRingBufferRx, 5U);
+			*(tAddress.puc) = ringbuffer_get_char(ptRingBufferRx);
 			break;
 
 		case MONITOR_ACCESSSIZE_16:
-			tVal.ul  = (unsigned long)(ringbuffer_peek(ptRingBufferRx, 5U));
-			tVal.ul |= (unsigned long)(ringbuffer_peek(ptRingBufferRx, 6U)) <<  8U;
+			tVal.ul  = (unsigned long)(ringbuffer_get_char(ptRingBufferRx));
+			tVal.ul |= (unsigned long)(ringbuffer_get_char(ptRingBufferRx)) <<  8U;
 			*(tAddress.pus) = tVal.us;
 			break;
 
 		case MONITOR_ACCESSSIZE_32:
-			tVal.ul  = (unsigned long)(ringbuffer_peek(ptRingBufferRx, 5U));
-			tVal.ul |= (unsigned long)(ringbuffer_peek(ptRingBufferRx, 6U)) <<  8U;
-			tVal.ul |= (unsigned long)(ringbuffer_peek(ptRingBufferRx, 7U)) << 16U;
-			tVal.ul |= (unsigned long)(ringbuffer_peek(ptRingBufferRx, 8U)) << 24U;
+			tVal.ul  = (unsigned long)(ringbuffer_get_char(ptRingBufferRx));
+			tVal.ul |= (unsigned long)(ringbuffer_get_char(ptRingBufferRx)) <<  8U;
+			tVal.ul |= (unsigned long)(ringbuffer_get_char(ptRingBufferRx)) << 16U;
+			tVal.ul |= (unsigned long)(ringbuffer_get_char(ptRingBufferRx)) << 24U;
 			*(tAddress.pul) = tVal.ul;
 			break;
 
 		case MONITOR_ACCESSSIZE_64:
-			tVal.ull  = (uint64_t)(ringbuffer_peek(ptRingBufferRx,  5U));
-			tVal.ull |= (uint64_t)(ringbuffer_peek(ptRingBufferRx,  6U)) <<  8U;
-			tVal.ull |= (uint64_t)(ringbuffer_peek(ptRingBufferRx,  7U)) << 16U;
-			tVal.ull |= (uint64_t)(ringbuffer_peek(ptRingBufferRx,  8U)) << 24U;
-			tVal.ull |= (uint64_t)(ringbuffer_peek(ptRingBufferRx,  9U)) << 32U;
-			tVal.ull |= (uint64_t)(ringbuffer_peek(ptRingBufferRx, 10U)) << 40U;
-			tVal.ull |= (uint64_t)(ringbuffer_peek(ptRingBufferRx, 11U)) << 48U;
-			tVal.ull |= (uint64_t)(ringbuffer_peek(ptRingBufferRx, 12U)) << 56U;
+			tVal.ull  = (uint64_t)(ringbuffer_get_char(ptRingBufferRx));
+			tVal.ull |= (uint64_t)(ringbuffer_get_char(ptRingBufferRx)) <<  8U;
+			tVal.ull |= (uint64_t)(ringbuffer_get_char(ptRingBufferRx)) << 16U;
+			tVal.ull |= (uint64_t)(ringbuffer_get_char(ptRingBufferRx)) << 24U;
+			tVal.ull |= (uint64_t)(ringbuffer_get_char(ptRingBufferRx)) << 32U;
+			tVal.ull |= (uint64_t)(ringbuffer_get_char(ptRingBufferRx)) << 40U;
+			tVal.ull |= (uint64_t)(ringbuffer_get_char(ptRingBufferRx)) << 48U;
+			tVal.ull |= (uint64_t)(ringbuffer_get_char(ptRingBufferRx)) << 56U;
 			*(tAddress.pull) = tVal.ull;
 			break;
 		}
+
+		/* Skip the CRC. */
+		ringbuffer_skip(ptRingBufferRx, 2U);
 
 		/* Send a status packet with "OK". */
 		send_status(MONITOR_STATUS_Ok);
@@ -445,37 +470,36 @@ static void command_write_area(unsigned int uiPacketSize)
 	RINGBUFFER_T *ptRingBufferRx;
 	ADR_T tAddress;
 	unsigned int uiSize;
-	unsigned int uiCnt;
 
 
 	ptRingBufferRx = &(tRingbufferRx.tRingBuffer);
 
 	/* The "write_area" command needs at least...
-	 *   1 byte type
 	 *   4 bytes address
 	 *   1 byte of data
-	 * This makes a total of 6 bytes.
+	 * This makes a total of 5 bytes.
 	 * There can be more data if the "size" is > 1.
 	 */
-	if( uiPacketSize<6U )
+	if( uiPacketSize<5U )
 	{
+		/* Skip the complete packet and the CRC. */
+		ringbuffer_skip(ptRingBufferRx, uiPacketSize+2U);
+
 		/* Respond with an error. */
 		send_status(MONITOR_STATUS_InvalidPacketSize);
 	}
 	else
 	{
 		/* Get address and size. */
-		tAddress.ul = peek_data32(ptRingBufferRx, 1U);
-		/* The packet size includes the type and address, which is in total 5 bytes. */
-		uiSize = uiPacketSize - 5U;
+		tAddress.ul = get_data32(ptRingBufferRx);
+		/* The packet size includes the address, which is in total 4 bytes. */
+		uiSize = uiPacketSize - 4U;
 
-		/* Copy the data from the packet to the memory.
-		 * Data starts at offset 5.
-		 */
-		for(uiCnt=5U; uiCnt<uiSize+5U; ++uiCnt)
-		{
-			*(tAddress.puc++) = ringbuffer_peek(ptRingBufferRx, uiCnt);
-		}
+		/* Copy the data from the packet to the memory. */
+		ringbuffer_read(ptRingBufferRx, tAddress.puc, uiSize);
+
+		/* Skip the CRC. */
+		ringbuffer_skip(ptRingBufferRx, 2U);
 
 		/* Send a status packet with "OK". */
 		send_status(MONITOR_STATUS_Ok);
@@ -499,10 +523,14 @@ static int monitor_process_packet(void)
 
 	ptRingBufferReceive = &(tRingbufferRx.tRingBuffer);
 
-	uiPacketSize = tMonitorHandle.uiPacketSize;
-
 	/* Get the packet type. */
-	ucPacketTyp = ringbuffer_peek(ptRingBufferReceive, 0);
+	ucPacketTyp = ringbuffer_get_char(ptRingBufferReceive);
+
+	/* Get the packet size.
+	 * 1 byte for the packet type was already processed.
+	 */
+	uiPacketSize = tMonitorHandle.uiPacketSize - 1U;
+
 	/* Is this a valid packet type? */
 	iPacketTypOk = 0;
 	tPacketTyp = (MONITOR_PACKET_TYP_T)ucPacketTyp;
@@ -827,9 +855,6 @@ void monitor_loop(void)
 		iDone = monitor_process_packet();
 		if( iDone!=0 )
 		{
-			/* Remove the data and CRC from the ringbuffer. */
-			ringbuffer_skip(ptRingBufferReceive, tMonitorHandle.uiPacketSize + 2U);
-
 			tMonitorHandle.tPacketState = MONITOR_PACKET_STATE_WaitForPacketStart;
 		}
 	}
