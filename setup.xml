@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="mbs/setup2html.xsl"?>
 
-<muhkuh_buildsystem project="papa_schlumpf_flex">
+<muhkuh_buildsystem group="org.muhkuh.lua" module="papa_schlumpf_flex">
 	<project_version>1.1.0</project_version>
 
 	<scons>
