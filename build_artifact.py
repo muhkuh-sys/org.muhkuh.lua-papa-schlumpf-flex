@@ -87,6 +87,7 @@ if tPlatform['host_distribution_id'] == 'ubuntu':
         if tPlatform['cpu_architecture'] == tPlatform['host_cpu_architecture']:
             # Build for the build host.
 
+            # Check for all system dependencies.
             astrDeb = [
                 'libudev-dev'
             ]
@@ -97,9 +98,50 @@ if tPlatform['host_distribution_id'] == 'ubuntu':
             astrJONCHKI_SYSTEM = []
             strMake = 'make'
 
-        elif tPlatform['cpu_architecture'] == 'arm64':
-            # Build on linux for raspebrry.
+        elif tPlatform['cpu_architecture'] == 'armhf':
+            # Build on linux for raspberry.
 
+            # Install the build dependencies.
+            astrDeb = [
+                'libudev-dev:armhf'
+            ]
+            install.install_foreign_debs(
+                astrDeb,
+                strCfg_workingFolder,
+                strCfg_projectFolder
+            )
+
+            astrCMAKE_COMPILER = [
+                '-DCMAKE_TOOLCHAIN_FILE=%s/cmake/toolchainfiles/'
+                'toolchain_ubuntu_armhf.cmake' % strCfg_projectFolder
+            ]
+            astrCMAKE_PLATFORM = [
+                '-DJONCHKI_PLATFORM_DIST_ID=%s' %
+                tPlatform['distribution_id'],
+
+                '-DJONCHKI_PLATFORM_DIST_VERSION=%s' %
+                tPlatform['distribution_version'],
+
+                '-DJONCHKI_PLATFORM_CPU_ARCH=%s' %
+                tPlatform['cpu_architecture']
+            ]
+
+            astrJONCHKI_SYSTEM = [
+                '--distribution-id %s' %
+                tPlatform['distribution_id'],
+
+                '--distribution-version %s' %
+                tPlatform['distribution_version'],
+
+                '--cpu-architecture %s' %
+                tPlatform['cpu_architecture']
+            ]
+            strMake = 'make'
+
+        elif tPlatform['cpu_architecture'] == 'arm64':
+            # Build on linux for raspberry.
+
+            # Install the build dependencies.
             astrDeb = [
                 'libudev-dev:arm64'
             ]
@@ -273,7 +315,12 @@ astrCmd = [
     'install-dependencies',
     '--verbose', strCfg_jonchkiVerbose,
     '--syscfg', strCfg_jonchkiSystemConfiguration,
-    '--prjcfg', strCfg_jonchkiProjectConfiguration
+    '--prjcfg', strCfg_jonchkiProjectConfiguration,
+    '--logfile', os.path.join(strCwd, 'jonchki.log'),
+    '--dependency-log', os.path.join(
+        strCfg_projectFolder,
+        'dependency-log-lua5.1.xml'
+    )
 ]
 astrCmd.extend(astrJONCHKI_SYSTEM)
 astrCmd.append('--build-dependencies')
@@ -332,7 +379,12 @@ astrCmd = [
     'install-dependencies',
     '--verbose', strCfg_jonchkiVerbose,
     '--syscfg', strCfg_jonchkiSystemConfiguration,
-    '--prjcfg', strCfg_jonchkiProjectConfiguration
+    '--prjcfg', strCfg_jonchkiProjectConfiguration,
+    '--logfile', os.path.join(strCwd, 'jonchki.log'),
+    '--dependency-log', os.path.join(
+        strCfg_projectFolder,
+        'dependency-log-lua5.4.xml'
+    )
 ]
 astrCmd.extend(astrJONCHKI_SYSTEM)
 astrCmd.append('--build-dependencies')
