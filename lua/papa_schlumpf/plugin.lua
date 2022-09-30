@@ -115,7 +115,30 @@ function Plugin:_init(strPluginName, strPluginTyp, tLogWriter, strLogLevel, tPap
     NETIOLA              = 15,
     NETIOLB              = 16
   }
+
   self.ROMLOADER_CHIPTYP = ROMLOADER_CHIPTYP
+
+  local tChiptypName = {
+    [0] = nil,
+    [1] = "netX500",
+    [2] = "netX100",
+    [3] = "netX50",
+    [4] = nil,
+    [5] = "netX10",
+    [6] = "netX51/52 Step A",
+    [7] = "netX51/52 Step B",
+    [8] = "netX4000 RLXD",
+    [9] = nil,
+    [10] = "netX90MPW",
+    [11] = "netX4000 Full",
+    [12] = "netX4100 Small",
+    [13] = "netX90 Rev0",
+    [14] = "netX90 Rev1",
+    [15] = "netIOL MPW",
+    [16] = "netIOL Rev0",
+  }
+  self.tChiptypName = tChiptypName
+
   -- Create a lookup table.
   local atIdToRomloaderChipTyp = {}
   for strName, ulId in pairs(ROMLOADER_CHIPTYP) do
@@ -151,10 +174,21 @@ function Plugin:GetLocation()
 end
 
 
+function Plugin:GetChiptypName(tChiptyp)
+  local tChiptypName = self.tChiptypName
+
+  local strChiptyp = tChiptypName[tChiptyp]
+  if strChiptyp == nil then
+    -- set chip name with unknown name
+    strChiptyp = "unknown chip"
+  end
+
+  return strChiptyp
+end
+
 function Plugin:GetChiptyp()
   return self.ulChipTyp
 end
-
 
 function Plugin:IsConnected()
   return self.fIsConnected
