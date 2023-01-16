@@ -52,9 +52,6 @@ static int transport_dpm_send(void *pvUser __attribute__((unused)), void *pvData
 void communication_main(void);
 void communication_main(void)
 {
-	BLINKI_HANDLE_T tBlinki;
-
-
 	systime_init();
 
 	/* Initialize the mailbox. */
@@ -63,17 +60,9 @@ void communication_main(void)
 	/* Initialize the monitor. */
 	monitor_init(transport_dpm_receive, transport_dpm_send, NULL);
 
-	/* FIXME: This is just an "I am alive" blinking.
-	 *        Remove this later as the test routines need full control
-	 *        over the SYS LED.
-	 */
-	/* Slow green blinking   *__GG   */
-	rdy_run_blinki_init(&tBlinki, 0x03, 0x13);
 	while(1)
 	{
 		/* Process packet data. */
 		monitor_loop();
-
-		rdy_run_blinki(&tBlinki);
 	}
 }
