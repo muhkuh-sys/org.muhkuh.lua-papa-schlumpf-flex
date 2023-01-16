@@ -2,7 +2,7 @@
 <dependency-log>
 	<dependencies>
 		<dependency group="org.lua" module="lua" artifact="lua" version="5.4.4.1"/>
-		<dependency group="org.muhkuh.lua" module="papa-schlumpf-flex" artifact="lua5.4-papa-schlumpf-flex" version="1.1.0"/>
+		<dependency group="org.muhkuh.lua" module="papa-schlumpf-flex" artifact="lua5.4-papa-schlumpf-flex" version="1.2.0"/>
 	</dependencies>
 	<build-dependencies>
 	</build-dependencies>
