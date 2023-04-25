@@ -40,6 +40,8 @@ public:
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR connect(void);
 	RESULT_INT_NOTHING_OR_NIL_WITH_ERR getFirmwareVersion(PUL_ARGUMENT_OUT pulVersionMajor, PUL_ARGUMENT_OUT pulVersionMinor, PUL_ARGUMENT_OUT pulVersionSub, PPC_ARGUMENT_OUT ppcVcsVersion);
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR resetPCI(uint32_t ulResetActiveToClock, uint32_t ulResetActiveDelayAfterClock, uint32_t ulBusIdleDelay);
+	RESULT_INT_TRUE_OR_NIL_WITH_ERR setPCIReset(uint32_t ulResetState);
+	RESULT_INT_TRUE_OR_NIL_WITH_ERR setupNetx(void);
 	RESULT_INT_NOTHING_OR_NIL_WITH_ERR ioRead(uint32_t ulAddress, PUL_ARGUMENT_OUT pulData);
 	RESULT_INT_NOTHING_OR_NIL_WITH_ERR memRead(uint32_t ulAddress, PUL_ARGUMENT_OUT pulData);
 	RESULT_INT_NOTHING_OR_NIL_WITH_ERR memReadArea(uint32_t ulAddress, uint32_t ulSize, char **ppcBUFFER_OUT, size_t *psizBUFFER_OUT);

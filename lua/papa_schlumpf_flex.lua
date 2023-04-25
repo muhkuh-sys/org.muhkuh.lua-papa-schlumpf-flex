@@ -172,6 +172,34 @@ end
 
 
 
+function papaSchlumpfFlex:setPCIReset(ulResetState)
+  local tLog = self.tLog
+  local tP = self.tP
+
+  local tResult, strError = tP:setPCIReset(ulResetState)
+  if tResult~=true then
+    tLog.error('Failed to set the PCI reset: %s', strError)
+  end
+
+  return tResult, strError
+end
+
+
+
+function papaSchlumpfFlex:setupNetx()
+  local tLog = self.tLog
+  local tP = self.tP
+
+  local tResult, strError = tP:setupNetx()
+  if tResult~=true then
+    tLog.error('Failed to setup the netX PCI core: %s', strError)
+  end
+
+  return tResult, strError
+end
+
+
+
 function papaSchlumpfFlex:processDmaList(atDma)
   local tLog = self.tLog
   local tP = self.tP

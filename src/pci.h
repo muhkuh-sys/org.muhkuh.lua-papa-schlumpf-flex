@@ -26,6 +26,8 @@ void pciInitGlobals(void);
 void pciModeEnable(void);
 void pciModeDisable(void);
 
+int pciSetupNetx(void);
+void pciSetPciReset(unsigned long ulResetState);
 int pciResetAndInit(unsigned int uRstActiveToClock, unsigned int uRstActiveDelayAfterClock, unsigned int uBusIdleDelay);
 void pciReset(unsigned int uRstActiveToClock, unsigned int uRstActiveDelayAfterClock, unsigned int uBusIdleDelay);
 

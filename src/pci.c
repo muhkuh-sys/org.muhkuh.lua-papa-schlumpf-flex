@@ -109,6 +109,32 @@ void pciModeDisable(void)
 
 //-------------------------------------
 
+int pciSetupNetx(void)
+{
+	unsigned long ulPciWindowStart;
+	int iResult;
+	int iDevConfigResult;
+
+
+	/* Be optimistic. */
+	iResult = 0;
+
+	/* configure arbiter */
+	pciArbConfig();
+
+	ulPciWindowStart = (unsigned long) g_pul_PCI_DMA_Buffer_Start;
+	pciSetMemoryWindow0(ulPciWindowStart, 0x008000);
+
+	iDevConfigResult = pciNetXDeviceConfigRead();
+	if( iDevConfigResult==0 )
+	{
+		iResult = -1;
+	}
+
+	return iResult;
+}
+
+
 int pciResetAndInit(unsigned int uRstActiveToClock, unsigned int uRstActiveDelayAfterClock, unsigned int uBusIdleDelay)
 {
 	unsigned long ulPciWindowStart;
@@ -204,6 +230,44 @@ void pciReset(unsigned int uRstActiveToClock, unsigned int uRstActiveDelayAfterC
 	// delay 1s (==10000 * 100us)
 	delay100US(uBusIdleDelay);
 }
+
+
+
+/**
+ * Reset PCI.
+ *
+ * @param uRstActiveToClock
+ * @param uRstActiveDelayAfterClock
+ * @param uBusIdleDelay
+ */
+
+void pciSetPciReset(unsigned long ulResetState)
+{
+	HOSTDEF(ptNetxControlledGlobalRegisterBlock2Area);
+	HOSTDEF(ptAsicCtrlArea);
+	unsigned long ulValue;
+
+
+	ulValue  = ptAsicCtrlArea->ulReset_ctrl;
+	if( ulResetState!=0 )
+	{
+		/* Switch clock off but enable driver. */
+		ptNetxControlledGlobalRegisterBlock2Area->ulClk_reg = 0x80000000;
+
+		/* Assert the PCI reset. */
+		ulValue |= HOSTMSK(reset_ctrl_RES_REQ_OUT);
+		ulValue |= HOSTMSK(reset_ctrl_EN_RES_REQ_OUT);
+	}
+	else
+	{
+		/* De-assert the PCI reset. */
+		ulValue &= ~(HOSTMSK(reset_ctrl_RES_REQ_OUT));
+		ulValue |= HOSTMSK(reset_ctrl_EN_RES_REQ_OUT);
+	}
+	ptAsicCtrlArea->ulAsic_ctrl_access_key = ptAsicCtrlArea->ulAsic_ctrl_access_key;
+	ptAsicCtrlArea->ulReset_ctrl = ulValue;
+}
+
 
 //-------------------------------------
 

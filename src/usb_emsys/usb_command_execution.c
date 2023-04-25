@@ -54,6 +54,39 @@ static void execute_command_reset_pci(PAPA_SCHLUMPF_USB_COMMAND_RESET_PCI_T *ptC
 
 
 
+static void execute_command_set_pci_reset(PAPA_SCHLUMPF_USB_COMMAND_SET_PCI_RESET_T *ptCommand)
+{
+	PAPA_SCHLUMPF_USB_COMMAND_RESULT_STATUS_T tPacket;
+
+
+	pciSetPciReset(ptCommand->ulResetState);
+	tPacket.ulStatus = USB_COMMAND_STATUS_Ok;
+	usb_send_packet((unsigned char*)(&tPacket), sizeof(tPacket));
+}
+
+
+
+static void execute_command_setup_netx(void)
+{
+	int iResult;
+	PAPA_SCHLUMPF_USB_COMMAND_RESULT_STATUS_T tPacket;
+
+
+	iResult = pciSetupNetx();
+	if( iResult==0 )
+	{
+		tPacket.ulStatus = USB_COMMAND_STATUS_Ok;
+	}
+	else
+	{
+		tPacket.ulStatus = USB_COMMAND_STATUS_PciInitFailed;
+	}
+
+	usb_send_packet((unsigned char*)(&tPacket), sizeof(tPacket));
+}
+
+
+
 static void execute_command_dma_io_read(PAPA_SCHLUMPF_USB_COMMAND_DMA_IO_READ_T *ptCommand)
 {
 	int iResult;
@@ -336,6 +369,8 @@ void execute_command(PAPA_SCHLUMPF_USB_COMMAND_T *ptCommand)
 	case PAPA_SCHLUMPF_USB_COMMAND_DMACfg1Write:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMAMemReadArea:
 	case PAPA_SCHLUMPF_USB_COMMAND_DMAMemWriteArea:
+	case PAPA_SCHLUMPF_USB_COMMAND_SetPCIReset:
+	case PAPA_SCHLUMPF_USB_COMMAND_SetupNetx:
 		iResult = 0;
 		break;
 	}
@@ -395,6 +430,14 @@ void execute_command(PAPA_SCHLUMPF_USB_COMMAND_T *ptCommand)
 
 		case PAPA_SCHLUMPF_USB_COMMAND_DMACfg1Write:
 			execute_command_dma_cfg1_write((PAPA_SCHLUMPF_USB_COMMAND_DMA_CFG1_WRITE_T*)ptCommand);
+			break;
+
+		case PAPA_SCHLUMPF_USB_COMMAND_SetPCIReset:
+			execute_command_set_pci_reset((PAPA_SCHLUMPF_USB_COMMAND_SET_PCI_RESET_T*)ptCommand);
+			break;
+
+		case PAPA_SCHLUMPF_USB_COMMAND_SetupNetx:
+			execute_command_setup_netx();
 			break;
 		}
 	}

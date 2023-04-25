@@ -197,6 +197,111 @@ RESULT_INT_TRUE_OR_NIL_WITH_ERR PapaSchlumpfFlex::resetPCI(uint32_t ulResetActiv
 
 
 
+RESULT_INT_TRUE_OR_NIL_WITH_ERR PapaSchlumpfFlex::setPCIReset(uint32_t ulResetState)
+{
+	PAPA_SCHLUMPF_RESULT_T tResult;
+	int iResult;
+	int iTransfered;
+	PAPA_SCHLUMPF_USB_COMMAND_SET_PCI_RESET_T tCommand;
+	PAPA_SCHLUMPF_USB_COMMAND_RESULT_STATUS_T tResponse;
+
+
+	if( m_ptDevHandlePapaSchlumpf==NULL )
+	{
+		tResult = PAPA_SCHLUMPF_RESULT_NotConnected;
+	}
+	else
+	{
+		tCommand.ulCommand = PAPA_SCHLUMPF_USB_COMMAND_SetPCIReset;
+		tCommand.ulResetState = ulResetState;
+		iResult = __send_packet((const unsigned char *)&tCommand, sizeof(tCommand), 100);
+		if( iResult!=0 )
+		{
+			fprintf(stderr, "%s: failed to send packet: %d\n", m_pcPluginId, iResult);
+			tResult = PAPA_SCHLUMPF_RESULT_USBError;
+		}
+		else
+		{
+			iResult = __receivePacket((unsigned char *)&tResponse, sizeof(tResponse), &iTransfered, 500);
+			if( iResult!=0 )
+			{
+				fprintf(stderr, "%s: failed to receive packet: %d\n", m_pcPluginId, iResult);
+				tResult = PAPA_SCHLUMPF_RESULT_USBError;
+			}
+			else if( iTransfered!=sizeof(tResponse) )
+			{
+				fprintf(stderr, "%s: received an unexpected amount of data. wanted %zd bytes, but got %d.\n", m_pcPluginId, sizeof(tResponse), iTransfered);
+				tResult = PAPA_SCHLUMPF_RESULT_USBError;
+			}
+			else if( tResponse.ulStatus!=USB_COMMAND_STATUS_Ok )
+			{
+				fprintf(stderr, "%s: received an error: %d.\n", m_pcPluginId, tResponse.ulStatus);
+				tResult = PAPA_SCHLUMPF_RESULT_CommandFailed;
+			}
+			else
+			{
+				tResult = PAPA_SCHLUMPF_RESULT_Ok;
+			}
+		}
+	}
+
+	return tResult;
+}
+
+
+
+RESULT_INT_TRUE_OR_NIL_WITH_ERR PapaSchlumpfFlex::setupNetx(void)
+{
+	PAPA_SCHLUMPF_RESULT_T tResult;
+	int iResult;
+	int iTransfered;
+	PAPA_SCHLUMPF_USB_COMMAND_T tCommand;
+	PAPA_SCHLUMPF_USB_COMMAND_RESULT_STATUS_T tResponse;
+
+
+	if( m_ptDevHandlePapaSchlumpf==NULL )
+	{
+		tResult = PAPA_SCHLUMPF_RESULT_NotConnected;
+	}
+	else
+	{
+		tCommand.ulCommand = PAPA_SCHLUMPF_USB_COMMAND_SetupNetx;
+		iResult = __send_packet((const unsigned char *)&tCommand, sizeof(tCommand), 100);
+		if( iResult!=0 )
+		{
+			fprintf(stderr, "%s: failed to send packet: %d\n", m_pcPluginId, iResult);
+			tResult = PAPA_SCHLUMPF_RESULT_USBError;
+		}
+		else
+		{
+			iResult = __receivePacket((unsigned char *)&tResponse, sizeof(tResponse), &iTransfered, 500);
+			if( iResult!=0 )
+			{
+				fprintf(stderr, "%s: failed to receive packet: %d\n", m_pcPluginId, iResult);
+				tResult = PAPA_SCHLUMPF_RESULT_USBError;
+			}
+			else if( iTransfered!=sizeof(tResponse) )
+			{
+				fprintf(stderr, "%s: received an unexpected amount of data. wanted %zd bytes, but got %d.\n", m_pcPluginId, sizeof(tResponse), iTransfered);
+				tResult = PAPA_SCHLUMPF_RESULT_USBError;
+			}
+			else if( tResponse.ulStatus!=USB_COMMAND_STATUS_Ok )
+			{
+				fprintf(stderr, "%s: received an error: %d.\n", m_pcPluginId, tResponse.ulStatus);
+				tResult = PAPA_SCHLUMPF_RESULT_CommandFailed;
+			}
+			else
+			{
+				tResult = PAPA_SCHLUMPF_RESULT_Ok;
+			}
+		}
+	}
+
+	return tResult;
+}
+
+
+
 RESULT_INT_NOTHING_OR_NIL_WITH_ERR PapaSchlumpfFlex::ioRead(uint32_t ulAddress, PUL_ARGUMENT_OUT pulData)
 {
 	PAPA_SCHLUMPF_RESULT_T tResult;
