@@ -888,8 +888,8 @@ function Plugin:call(ulAddress, ulParameterR0, fnCallback, pvCallback)
     if strResponse==nil then
       error('Error')
     else
-      tLog.info('Got response:')
-      _G.tester:hexdump(strResponse)
+--      tLog.info('Got response:')
+--      _G.tester:hexdump(strResponse)
       local ucType = string.byte(strResponse, 1)
       if ucType==self.MONITOR_PACKET_TYP.Status then
         local ucStatus = string.byte(strResponse, 2)
