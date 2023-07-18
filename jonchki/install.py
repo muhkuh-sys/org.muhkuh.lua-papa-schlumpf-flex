@@ -8,7 +8,10 @@ def install_host_debs(astrDeb):
         strDpkgStatus = subprocess.check_output(
             "dpkg-query -W -f='${Status}' %s || echo 'unknown'" % strDeb,
             shell=True
-        ).decode("utf-8", "replace")
+        ).decode(
+            "utf-8",
+            "replace"
+        )
         print('Check for %s = %s' % (strDeb, strDpkgStatus))
         if strDpkgStatus != 'install ok installed':
             astrInstall.append(strDeb)
@@ -31,9 +34,7 @@ def install_foreign_debs(astrDeb, strCfg_workingFolder, strCfg_projectFolder):
     packagesPath = os.path.join(strCfg_workingFolder, 'packages')
     os.chdir(packagesPath)
     subProcessPath = os.path.join(strCfg_projectFolder, 'cmake', 'tools')
-    subProcessCall = '%s/get_dependencies.sh %s' % (
-        subProcessPath,
-        ' '.join(astrDeb)
-    )
+    subProcessCall = '%s/get_dependencies.sh %s' % (subProcessPath,
+                                                    ' '.join(astrDeb))
     subprocess.check_call(subProcessCall, shell=True)
     os.chdir(strCfg_workingFolder)

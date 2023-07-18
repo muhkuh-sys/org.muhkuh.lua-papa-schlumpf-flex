@@ -45,14 +45,5 @@
   return astrVersions, strNextPage
 			</versionparser>
 		</repository>
-		<!-- The sourceforge repository contains stable artifacts. -->
-<!--
-		<repository id="sourceforge" type="url" cacheable="true" rescan="3600">
-			<root>https://sourceforge.net/projects/muhkuh/files/jonchki</root>
-			<versions>[group]/[module]/</versions>
-			<config>[group]/[module]/[version]/[artifact]-[version][platform].[extension]/download</config>
-			<artifact>[group]/[module]/[version]/[artifact]-[version][platform].[extension]/download</artifact>
-		</repository>
--->
 	</repositories>
 </jonchkicfg>

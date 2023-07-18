@@ -39,7 +39,7 @@ except ImportError:
     from urllib2 import urlopen, HTTPError
 
 
-strDefaultJonchkiVersion = '0.0.8.1'
+strDefaultJonchkiVersion = '0.0.11.1'
 
 
 class ProgressOutput:

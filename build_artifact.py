@@ -13,6 +13,7 @@ import sys
 tPlatform = cli_args.parse()
 print('Building for %s' % tPlatform['platform_id'])
 
+
 # --------------------------------------------------------------------------
 # -
 # - Configuration
@@ -35,8 +36,7 @@ strCfg_jonchkiHerePath = os.path.join(
     'jonchki'
 )
 # This is the Jonchki version to use.
-strCfg_jonchkiVersion = '0.0.8.1'
-
+strCfg_jonchkiVersion = '0.0.11.1'
 # Look in this folder for Jonchki archives before downloading them.
 strCfg_jonchkiLocalArchives = os.path.join(
     strCfg_projectFolder,
@@ -324,7 +324,6 @@ astrCmd.extend(astrJONCHKI_SYSTEM)
 astrCmd.append('--build-dependencies')
 astrCmd.append(astrMatch[0])
 subprocess.check_call(' '.join(astrCmd), shell=True, cwd=strCwd, env=astrEnv)
-
 
 # ---------------------------------------------------------------------------
 #

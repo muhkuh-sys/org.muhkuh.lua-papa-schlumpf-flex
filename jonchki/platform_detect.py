@@ -46,9 +46,10 @@ class PlatformDetect:
         strCpuArchitecture = None
 
         # Try to parse the output of the 'getconf LONG_BIT' command.
-        strOutput = subprocess.check_output(
-            ['getconf', 'LONG_BIT']
-        ).decode("utf-8", "replace")
+        strOutput = subprocess.check_output(['getconf', 'LONG_BIT']).decode(
+            "utf-8",
+            "replace"
+        )
         strOutputStrip = strOutput.strip()
         if strOutputStrip == '32':
             strCpuArchitecture = 'x86'
@@ -67,9 +68,10 @@ class PlatformDetect:
         }
 
         # Try to parse the output of the 'lscpu' command.
-        strOutput = subprocess.check_output(
-            ['lscpu']
-        ).decode("utf-8", "replace")
+        strOutput = subprocess.check_output(['lscpu']).decode(
+            "utf-8",
+            "replace"
+        )
         tMatch = re.search(r'Architecture: *(\S+)', strOutput)
         if tMatch is None:
             raise Exception('Failed to get the CPU architecture with "lscpu".')
