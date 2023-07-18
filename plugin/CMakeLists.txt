@@ -48,23 +48,10 @@ ADD_DEPENDENCIES(TARGET_papa_schlumpf TARGET_swigluarun)
 # Set the name of the output file to "papa_schlumpf".
 SET_TARGET_PROPERTIES(TARGET_papa_schlumpf PROPERTIES PREFIX "" OUTPUT_NAME "papa_schlumpf")
 
-# On mingw link all compiler libraries static.
-IF((${CMAKE_SYSTEM_NAME} STREQUAL "Windows") AND (${CMAKE_COMPILER_IS_GNUCC}))
-	set_property(TARGET TARGET_papa_schlumpf PROPERTY LINK_FLAGS "-static-libgcc -static-libstdc++")
-ENDIF((${CMAKE_SYSTEM_NAME} STREQUAL "Windows") AND (${CMAKE_COMPILER_IS_GNUCC}))
-
 
 # Install the lua module.
 INSTALL(TARGETS TARGET_papa_schlumpf
         DESTINATION ${INSTALL_DIR_LUA_MODULES})
-
-
-# Add tests for this module.
-IF((${CMAKE_SYSTEM_NAME} STREQUAL "Windows") AND (${CMAKE_COMPILER_IS_GNUCC}))
-	# Here are the MinGW specific tests.
-	ADD_TEST(NAME bit_MinGW_DLL_dependencies
-	         COMMAND "${PYTHON_EXECUTABLE}" ${CMAKE_HOME_DIRECTORY}/cmake/tests/mingw_dll_dependencies.py -u lua5.1 $<TARGET_FILE:TARGET_papa_schlumpf>)
-ENDIF((${CMAKE_SYSTEM_NAME} STREQUAL "Windows") AND (${CMAKE_COMPILER_IS_GNUCC}))
 
 #----------------------------------------------------------------------------
 #
@@ -81,26 +68,14 @@ SET(CPACK_PACKAGE_FILE_NAME "lua${BUILDCFG_LUA_VERSION}-papa-schlumpf-flex-${PRO
 	# This is the folder where the external project TARGET_bitop installed the files.
 	SET(SUB_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
-	IF(${JONCHKI_PLATFORM_DIST_ID} STREQUAL "windows")
-		# Package a windows build.
+	# Package a linux build.
 
-		# Install the DLL without execute permissions.
-		INSTALL(FILES ${SUB_INSTALL_DIR}/papa_schlumpf.dll
-		        DESTINATION lua_plugins/)
+	INSTALL(FILES ${SUB_INSTALL_DIR}/papa_schlumpf.so
+	        DESTINATION lua_plugins/)
 
-		CONFIGURE_FILE(installer/lua${BUILDCFG_LUA_VERSION}/install_windows.lua
-		               ${CMAKE_CURRENT_BINARY_DIR}/package/install.lua
-		               @ONLY)
-	ELSE(${JONCHKI_PLATFORM_DIST_ID} STREQUAL "windows")
-		# Package a linux build.
-
-		INSTALL(FILES ${SUB_INSTALL_DIR}/papa_schlumpf.so
-		        DESTINATION lua_plugins/)
-
-		CONFIGURE_FILE(installer/lua${BUILDCFG_LUA_VERSION}/install_linux.lua
-		               ${CMAKE_CURRENT_BINARY_DIR}/package/install.lua
-		               @ONLY)
-	ENDIF(${JONCHKI_PLATFORM_DIST_ID} STREQUAL "windows")
+	CONFIGURE_FILE(installer/lua${BUILDCFG_LUA_VERSION}/install_linux.lua
+	               ${CMAKE_CURRENT_BINARY_DIR}/package/install.lua
+	               @ONLY)
 
 	INSTALL(FILES ${CMAKE_HOME_DIRECTORY}/lua/papa_schlumpf_flex.lua
 	        DESTINATION lua/)
