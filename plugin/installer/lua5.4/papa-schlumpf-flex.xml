@@ -4,7 +4,7 @@
 	      module="papa-schlumpf-flex"
 	      artifact="lua5.4-papa-schlumpf-flex"
 	      version="@PROJECT_VERSION@"
-	      vcs-id="@PROJECT_VERSION_VCS_LONG@"
+	      vcs-id="@PROJECT_VERSION_VCS@"
 	      extension="tar.xz"
 	      platform="@JONCHKI_PLATFORM@">
 		<license name="GPL-2.0"/>
