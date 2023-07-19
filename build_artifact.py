@@ -263,22 +263,6 @@ subprocess.check_call(' '.join(astrCmd), shell=True, cwd=strCwd, env=astrEnv)
 
 # ---------------------------------------------------------------------------
 #
-# Build the externals.
-#
-astrCmd = [
-    'cmake',
-    '-DCMAKE_INSTALL_PREFIX=""',
-    '-DPRJ_DIR=%s' % strCfg_projectFolder,
-    '-DWORKING_DIR=%s' % strCfg_workingFolder
-]
-astrCmd.extend(astrCMAKE_COMPILER)
-astrCmd.append(os.path.join(strCfg_projectFolder, 'external'))
-strCwd = os.path.join(strCfg_workingFolder, 'external')
-subprocess.check_call(' '.join(astrCmd), shell=True, cwd=strCwd, env=astrEnv)
-subprocess.check_call(strMake, shell=True, cwd=strCwd, env=astrEnv)
-
-# ---------------------------------------------------------------------------
-#
 # Get the build requirements for LUA5.4.
 #
 for strMatch in glob.iglob(os.path.join(strCwd,
@@ -321,6 +305,22 @@ astrCmd.extend(astrJONCHKI_SYSTEM)
 astrCmd.append('--build-dependencies')
 astrCmd.append(astrMatch[0])
 subprocess.check_call(' '.join(astrCmd), shell=True, cwd=strCwd, env=astrEnv)
+
+# ---------------------------------------------------------------------------
+#
+# Build the externals.
+#
+astrCmd = [
+    'cmake',
+    '-DCMAKE_INSTALL_PREFIX=""',
+    '-DPRJ_DIR=%s' % strCfg_projectFolder,
+    '-DWORKING_DIR=%s' % strCfg_workingFolder
+]
+astrCmd.extend(astrCMAKE_COMPILER)
+astrCmd.append(os.path.join(strCfg_projectFolder, 'external'))
+strCwd = os.path.join(strCfg_workingFolder, 'external')
+subprocess.check_call(' '.join(astrCmd), shell=True, cwd=strCwd, env=astrEnv)
+subprocess.check_call(strMake, shell=True, cwd=strCwd, env=astrEnv)
 
 # ---------------------------------------------------------------------------
 #
