@@ -11,6 +11,7 @@ PapaSchlumpfFlex::PapaSchlumpfFlex(void)
  : m_ptLibUsbContext(NULL)
  , m_ptDevHandlePapaSchlumpf(NULL)
  , m_pcPluginId(NULL)
+ , m_uiPluginConnections(0)
 {
 	const struct libusb_version *ptLibUsbVersion;
 
@@ -958,6 +959,32 @@ RESULT_INT_TRUE_OR_NIL_WITH_ERR PapaSchlumpfFlex::disconnect(void)
 
 
 
+RESULT_INT_TRUE_OR_NIL_WITH_ERR PapaSchlumpfFlex::plugin_connect(void)
+{
+	/* Increase the reference counter. */
+	++m_uiPluginConnections;
+}
+
+
+
+RESULT_INT_TRUE_OR_NIL_WITH_ERR PapaSchlumpfFlex::plugin_disconnect(void)
+{
+	/* Are any references left? */
+	if( m_uiPluginConnections!=0 )
+	{
+		/* Decrement the reference counter. */
+		--m_uiPluginConnections;
+
+		/* Close the PapaSchlumpf connection if the reference reached 0. */
+		if( m_uiPluginConnections==0 )
+		{
+			disconnect();
+		}
+	}
+}
+
+
+
 /* Look through all USB devices. If one Papa Schlumpf device was found, open it.
  * 0 or more than one Papa Schlumpf device results in an error.
  */
@@ -1130,6 +1157,9 @@ void PapaSchlumpfFlex::__disconnect(void)
 		libusb_exit(m_ptLibUsbContext);
 		m_ptLibUsbContext = NULL;
 	}
+
+	/* On a disconnect all plugins are automatically disconnected. */
+	m_uiPluginConnections = 0;
 }
 
 

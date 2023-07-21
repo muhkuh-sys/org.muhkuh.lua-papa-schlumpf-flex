@@ -53,6 +53,8 @@ public:
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR cfg0Write(uint32_t ulAddress, uint32_t ulData);
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR cfg1Write(uint32_t ulAddress, uint32_t ulData);
 	RESULT_INT_TRUE_OR_NIL_WITH_ERR disconnect(void);
+	RESULT_INT_TRUE_OR_NIL_WITH_ERR plugin_connect(void);
+	RESULT_INT_TRUE_OR_NIL_WITH_ERR plugin_disconnect(void);
 
 	const char *get_error_string(int iResult);
 
@@ -79,6 +81,9 @@ private:
 
 	/* This is the name of the plugin. It is used for error messages on the screen. */
 	char *m_pcPluginId;
+
+	/* A counter for the number of connected plugins. */
+	unsigned int m_uiPluginConnections;
 #endif
 };
 
