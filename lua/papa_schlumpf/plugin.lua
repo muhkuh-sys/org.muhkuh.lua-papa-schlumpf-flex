@@ -156,6 +156,9 @@ function Plugin:_init(strPluginName, strPluginTyp, tLogWriter, strLogLevel, tPap
   self.fIsConnected = false
 
   self.strPacketStart = string.char(0x2a)
+
+  -- Register the plugin.
+  tPapaSchlumpf.tP:plugin_connect()
 end
 
 
@@ -202,6 +205,7 @@ function Plugin:Disconnect()
     tLog.debug('Ignoring disconnect request. Already disconnected.')
   else
     tLog.debug('Disconnecting...')
+    self.tPapaSchlumpf.tP:plugin_disconnect()
     self.fIsConnected = false
   end
 end
